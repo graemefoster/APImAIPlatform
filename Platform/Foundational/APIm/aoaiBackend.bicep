@@ -24,7 +24,7 @@ resource backend 'Microsoft.ApiManagement/service/backends@2022-08-01' = {
   properties: {
     title: 'Azure OpenAI'
     description: 'Azure OpenAI Backend'
-    url: existingAoaiResource.endpoint
+    url: '${existingAoaiResource.endpoint}/openai'
     protocol: 'http'
   }
 }

@@ -19,7 +19,7 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
 }
 
 resource backend 'Microsoft.ApiManagement/service/backends@2023-05-01-preview' = {
-  name: 'aoai-pool-${pool.PoolName}'
+  name: pool.PoolName
   parent: apim
   properties: {
     title: 'Azure OpenAI Pool'
