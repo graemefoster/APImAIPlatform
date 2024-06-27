@@ -69,7 +69,7 @@ resource productFragment 'Microsoft.ApiManagement/service/products/policies@2023
   parent: apimProduct
   name: 'policy'
   properties: {
-    format: 'xml'
+    format: 'rawxml'
     value: finalPolicyXml
   }
 }

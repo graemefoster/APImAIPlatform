@@ -20,9 +20,20 @@
             }
             return "";
         }" />
+        <set-variable name="newBackendPoolId" value="@{
+            var dictionary = new Dictionary<string, string>();
+
+            {policy-pool-map}
+
+            var incomingDeploymentId = context.Request.MatchedParameters["deployment-id"];
+            if (dictionary.ContainsKey(incomingDeploymentId)) {
+                return dictionary[incomingDeploymentId];
+            }
+            return "";
+        }" />
         <set-variable name="newUrl" value="@(context.Operation.UrlTemplate.Replace("/{deployment-id}/", "/" + (string)context.Variables["newDeploymentId"] + "/"))" />
         <rewrite-uri template="@((string)context.Variables["newUrl"])" copy-unmatched-params="true" />
-        <set-backend-service id="apim-generated-policy" backend-id="{selected-backend-pool}" />
+        <set-backend-service id="apim-generated-policy" backend-id="@((string)context.Variables["newBackendPoolId"])" />
 
     </inbound>
     <!-- Control if and how the requests are forwarded to services  -->
