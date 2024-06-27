@@ -84,11 +84,11 @@ module azureOpenAIApis 'Foundational/APIm/aoaiapi.bicep' = {
     apimName: apimName
     azureOpenAiApis: [
       {
-        apiSpecUrl: 'https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/stable/2024-02-01/inference.json'
-        version: '2024-02-01'
+        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/Foundational/AOAI/openapi/aoai-2022-12-01.json'
+        version: '2022-12-01'
       }
       {
-        apiSpecUrl: 'https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/preview/2024-04-01-preview/inference.json'
+        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/Foundational/AOAI/openapi/aoai-24-04-01-preview.json'
         version: '2024-04-01-preview'
       }
     ]
