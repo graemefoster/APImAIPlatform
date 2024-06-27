@@ -1,0 +1,40 @@
+<!--
+    - Policies are applied in the order they appear.
+    - Position <base/> inside a section to inherit policies from the outer scope.
+    - Comments within policies are not preserved.
+-->
+<!-- Add policies as children to the <inbound>, <outbound>, <backend>, and <on-error> elements -->
+<policies>
+    <!-- Throttle, authorize, validate, cache, or transform the requests -->
+    <inbound>
+        <base />
+        <authentication-managed-identity resource="https://cognitiveservices.azure.com/" />
+        <set-variable name="newDeploymentId" value="@{
+            var dictionary = new Dictionary<string, string>();
+
+            {policy-map}
+
+            var incomingDeploymentId = context.Request.MatchedParameters["deployment-id"];
+            if (dictionary.ContainsKey(incomingDeploymentId)) {
+                return dictionary[incomingDeploymentId];
+            }
+            return "";
+        }" />
+        <set-variable name="newUrl" value="@(context.Operation.UrlTemplate.Replace("/{deployment-id}/", "/" + (string)context.Variables["newDeploymentId"] + "/"))" />
+        <rewrite-uri template="@((string)context.Variables["newUrl"])" copy-unmatched-params="true" />
+        <set-backend-service id="apim-generated-policy" backend-id="{selected-backend-pool}" />
+
+    </inbound>
+    <!-- Control if and how the requests are forwarded to services  -->
+    <backend>
+        <base />
+    </backend>
+    <!-- Customize the responses -->
+    <outbound>
+        <base />
+    </outbound>
+    <!-- Handle exceptions and customize error responses  -->
+    <on-error>
+        <base />
+    </on-error>
+</policies>
