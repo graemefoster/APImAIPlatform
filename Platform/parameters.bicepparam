@@ -14,7 +14,7 @@ param existingAoaiResources = [
 param aoaiPools = [
   {
     AzureOpenAIResourceNames: ['graemeopenai']
-    PoolName: 'graemeopenai'
+    PoolName: 'graemeopenai-pool'
   }
 ]
 
@@ -31,7 +31,7 @@ param consumerDemands = [
         //contentSafetyFilter: {}
 
         platformTeamDeploymentMapping: 'embedding-model-2-test-2'
-        platformTeamPoolMapping: 'graemeopenai'
+        platformTeamPoolMapping: 'graemeopenai-pool'
 
         outsideDeploymentName: 'graeme-embedding-model-345'
       }
@@ -41,7 +41,7 @@ param consumerDemands = [
         //contentSafetyFilter: {}
 
         platformTeamDeploymentMapping: 'gpt-35-turbo-test'
-        platformTeamPoolMapping: 'graemeopenai'
+        platformTeamPoolMapping: 'graemeopenai-pool'
 
         outsideDeploymentName: 'graeme-gpt-35-turbo-123'
       }

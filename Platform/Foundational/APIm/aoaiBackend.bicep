@@ -19,13 +19,17 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
 }
 
 resource backend 'Microsoft.ApiManagement/service/backends@2022-08-01' = {
-  name: 'aoai-${existingAoaiResource.resourceName}'
+  name: existingAoaiResource.resourceName
   parent: apim
   properties: {
     title: 'Azure OpenAI'
     description: 'Azure OpenAI Backend'
-    url: '${existingAoaiResource.endpoint}/openai'
+    url: '${existingAoaiResource.endpoint}openai'
     protocol: 'http'
+    tls: {
+      validateCertificateChain: true
+      validateCertificateName: true
+    }
   }
 }
 
