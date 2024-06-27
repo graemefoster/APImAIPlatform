@@ -37,10 +37,14 @@ resource aoaiApi 'Microsoft.ApiManagement/service/apis@2023-05-01-preview' = [
       value: apiInfo.apiSpecUrl
       apiVersion: apiInfo.version
       apiVersionSetId: aoaiApiVersionSet.id
+      subscriptionRequired: true
+      subscriptionKeyParameterNames: {
+        header: 'api-key'
+        query: 'api-key'
+      }
     }
   }
 ]
 
 output aoaiApiIds array = [for i in range(0, length(azureOpenAiApis)): aoaiApi[i].id]
 output aoaiApiNames array = [for i in range(0, length(azureOpenAiApis)): aoaiApi[i].name]
-
