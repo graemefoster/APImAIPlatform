@@ -29,7 +29,6 @@ type ConsumerModelAccess = {
 type DeploymentRequirement = {
   aoaiResourceGroupName: string
   aoaiName: string
-  name: string
   deploymentName: string
   model: string
   modelVersion: string

@@ -30,7 +30,7 @@ param consumerDemands = [
         expectedThroughputThousandsOfTokensPerMinute: 1
         //contentSafetyFilter: {}
 
-        platformTeamDeploymentMapping: 'embedding-model-2-test-2'
+        platformTeamDeploymentMapping: 'testdeploy'
         platformTeamPoolMapping: 'graemeopenai-pool'
 
         outsideDeploymentName: 'graeme-embedding-model-345'
@@ -40,7 +40,7 @@ param consumerDemands = [
         expectedThroughputThousandsOfTokensPerMinute: 1
         //contentSafetyFilter: {}
 
-        platformTeamDeploymentMapping: 'gpt-35-turbo-test'
+        platformTeamDeploymentMapping: 'testdeploy2'
         platformTeamPoolMapping: 'graemeopenai-pool'
 
         outsideDeploymentName: 'graeme-gpt-35-turbo-123'
@@ -53,7 +53,6 @@ param consumerDemands = [
 //-------------------------------
 param deploymentRequirements = [
   {
-    name: 'embedding-model-2-test'
     aoaiName: 'graemeopenai'
     aoaiResourceGroupName: 'graemeopenai'
     deploymentName: 'testdeploy'
@@ -64,18 +63,6 @@ param deploymentRequirements = [
     thousandsOfTokensPerMinute: 2
   }
   {
-    name: 'embedding-model-2-test-2'
-    aoaiName: 'graemeopenai'
-    aoaiResourceGroupName: 'graemeopenai'
-    deploymentName: 'testdeploy'
-    enableDynamicQuota: false
-    isPTU: false
-    model: 'text-embedding-ada-002'
-    modelVersion: '2'
-    thousandsOfTokensPerMinute: 2
-  }
-  {
-    name: 'gpt-35-turbo-test'
     aoaiName: 'graemeopenai'
     aoaiResourceGroupName: 'graemeopenai'
     deploymentName: 'testdeploy2'
