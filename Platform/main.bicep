@@ -15,7 +15,8 @@ param location string
 param apimName string
 param appInsightsResourceGroup string
 param appInsightsName string
-param existingAoaiResources AzureOpenAIResource[]
+param logAnalyticsWorkspaceResourceGroup string
+param logAnalyticsWorkspaceName string
 param aoaiPools AzureOpenAIResourcePool[]
 param deploymentRequirements DeploymentRequirement[]
 param consumerDemands ConsumerDemand[]
@@ -32,6 +33,8 @@ module apimFoundation 'APIm/apim.bicep' = {
     apimName: apimName
     appInsightsResourceGroup: appInsightsResourceGroup
     appInsightsName: appInsightsName
+    logAnalyticsWorkspaceResourceGroup: logAnalyticsWorkspaceResourceGroup
+    logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
   }
 }
 
@@ -54,11 +57,11 @@ module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
     apimName: apimName
     azureOpenAiApis: [
       {
-        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/Foundational/AOAI/openapi/aoai-2022-12-01.json'
+        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2022-12-01.json'
         version: '2022-12-01'
       }
       {
-        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/Foundational/AOAI/openapi/aoai-24-04-01-preview.json'
+        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-24-04-01-preview.json'
         version: '2024-04-01-preview'
       }
     ]

@@ -39,8 +39,8 @@ module apimBackendPools 'aoaiBackendPool.bicep' = [
       pool: {
         PoolName: aoaiBackendPools[index].PoolName
         AzureOpenAIResourceNames: aoaiBackendPools[index].AzureOpenAIResourceNames
-        Pools: [for index in range(0, length(aoaiBackendPools)): apimBackendsOnAoaiServices[index].outputs.backend]
       }
+      backendServices:  [for index in range(0, length(aoaiBackendPools)): apimBackendsOnAoaiServices[index].outputs.backend]
     }
   }
 ]

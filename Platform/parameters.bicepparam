@@ -3,6 +3,8 @@ using './main.bicep'
 param location = 'australiaeast'
 param platformResourceGroup = 'api-centre'
 param apimName = 'grfapimaoai'
+param logAnalyticsWorkspaceResourceGroup = 'graemeopenai'
+param logAnalyticsWorkspaceName = 'law-test'
 param appInsightsName = 'grfinsightstest'
 param appInsightsResourceGroup = 'graemeopenai'
 

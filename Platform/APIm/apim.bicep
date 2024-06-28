@@ -1,11 +1,40 @@
 targetScope = 'resourceGroup'
 
 param apimName string
+
 param appInsightsResourceGroup string
 param appInsightsName string
 
+param logAnalyticsWorkspaceResourceGroup string
+param logAnalyticsWorkspaceName string
+
 resource apim 'Microsoft.ApiManagement/service@2019-12-01' existing = {
   name: apimName
+}
+
+resource logAnalytics 'Microsoft.ApiManagement/service@2019-12-01' existing = {
+  scope: resourceGroup(logAnalyticsWorkspaceResourceGroup)
+  name: logAnalyticsWorkspaceName
+}
+
+resource apimDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'diagnostics'
+  scope: apim
+  properties: {
+    workspaceId: logAnalytics.id
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
 }
 
 resource appInsights 'Microsoft.Insights/components@2015-05-01' existing = {
