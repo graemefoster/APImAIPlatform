@@ -2,14 +2,6 @@ targetScope = 'subscription'
 
 import {AzureOpenAIBackend, AzureOpenAIResource, AzureOpenAIResourcePool, ConsumerModelAccess, DeploymentRequirement, ConsumerDemand } from './types.bicep'
 
-type Configuration = {
-  apimName: string
-  location: string
-  platformResourceGroup: string
-  existingAoaiResources: AzureOpenAIResource[]
-  azureOpenAiPools: AzureOpenAIResourcePool[]
-}
-
 param platformResourceGroup string
 param location string
 param apimName string
@@ -20,6 +12,7 @@ param logAnalyticsWorkspaceName string
 param aoaiPools AzureOpenAIResourcePool[]
 param deploymentRequirements DeploymentRequirement[]
 param consumerDemands ConsumerDemand[]
+param existingAoaiResources AzureOpenAIResource[]
 
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: platformResourceGroup

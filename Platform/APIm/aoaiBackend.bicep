@@ -1,15 +1,6 @@
 targetScope = 'resourceGroup'
 
-type AzureOpenAIResourceOutput = {
-  resourceName: string
-  resourceId: string
-  endpoint: string
-}
-
-type AzureOpenAIBackend = {
-  aoaiResourceName: string
-  backendId: string
-}
+import { AzureOpenAIResourceOutput, AzureOpenAIBackend } from '../types.bicep'
 
 param existingAoaiResource AzureOpenAIResourceOutput
 param apimName string

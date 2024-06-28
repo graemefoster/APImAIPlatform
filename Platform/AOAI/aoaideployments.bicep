@@ -1,15 +1,6 @@
 targetScope = 'subscription'
 
-type DeploymentRequirement = {
-  aoaiResourceGroupName: string
-  aoaiName: string
-  deploymentName: string
-  model: string
-  modelVersion: string
-  thousandsOfTokensPerMinute: int
-  isPTU: bool
-  enableDynamicQuota: bool
-}
+import { DeploymentRequirement } from '../types.bicep'
 
 param deploymentRequirements DeploymentRequirement[]
 
