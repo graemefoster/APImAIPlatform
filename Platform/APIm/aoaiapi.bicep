@@ -14,6 +14,7 @@ resource apimAppInsightsLogger 'Microsoft.ApiManagement/service/loggers@2023-05-
 }
 
 resource aoaiApiVersionSet 'Microsoft.ApiManagement/service/apiVersionSets@2023-05-01-preview' existing = {
+  parent: apim
   name: versionSetName
 }
 
@@ -39,7 +40,7 @@ resource aoaiApi 'Microsoft.ApiManagement/service/apis@2023-05-01-preview' = {
   }
 
   resource diagnostics 'diagnostics@2023-05-01-preview' = {
-    name: 'diagnostics'
+    name: 'applicationinsights'
     properties: {
       loggerId: apimAppInsightsLogger.id
       metrics: true
