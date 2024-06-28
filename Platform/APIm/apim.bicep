@@ -12,7 +12,7 @@ resource apim 'Microsoft.ApiManagement/service@2019-12-01' existing = {
   name: apimName
 }
 
-resource logAnalytics 'Microsoft.ApiManagement/service@2019-12-01' existing = {
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   scope: resourceGroup(logAnalyticsWorkspaceResourceGroup)
   name: logAnalyticsWorkspaceName
 }
