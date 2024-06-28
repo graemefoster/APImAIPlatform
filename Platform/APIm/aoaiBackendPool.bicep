@@ -1,15 +1,6 @@
 targetScope = 'resourceGroup'
 
-type AzureOpenAIBackend = {
-  aoaiResourceName: string
-  backendId: string
-}
-
-type AzureOpenAIResourcePool = {
-  PoolName: string
-  AzureOpenAIResourceNames: string[]
-  Pools: AzureOpenAIBackend[]
-}
+import { AzureOpenAIResourcePool, AzureOpenAIBackend } from '../types.bicep'
 
 param pool AzureOpenAIResourcePool
 param apimName string

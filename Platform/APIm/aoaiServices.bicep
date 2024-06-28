@@ -1,16 +1,6 @@
 targetScope = 'resourceGroup'
 
-type AzureOpenAIResource = {
-  resourceGroupName: string
-  name: string
-}
-
-type AzureOpenAIResourceOutput = {
-  resourceId: string
-  resourceGroupName: string
-  resourceName: string
-  endpoint: string
-}
+import { AzureOpenAIResource, AzureOpenAIResourceOutput } from '../types.bicep'
 
 param existingAoaiResource AzureOpenAIResource
 param apimManagedIdentityPrincipalId string

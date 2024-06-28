@@ -1,18 +1,6 @@
 targetScope = 'resourceGroup'
 
-type ConsumerModelAccess = {
-  modelName: string
-  expectedThroughputThousandsOfTokensPerMinute: int
-  platformTeamDeploymentMapping: string
-  platformTeamPoolMapping: string
-  outsideDeploymentName: string
-}
-
-type ConsumerDemand = {
-  name: string
-  consumerName: string
-  requirements: ConsumerModelAccess[]
-}
+import { ConsumerModelAccess, ConsumerDemand } from '../types.bicep'
 
 param apimName string
 param apiNames string[]

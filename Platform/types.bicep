@@ -1,7 +1,7 @@
+@export()
 type DeploymentRequirement = {
   aoaiResourceGroupName: string
   aoaiName: string
-  name: string
   deploymentName: string
   model: string
   modelVersion: string
@@ -10,12 +10,28 @@ type DeploymentRequirement = {
   enableDynamicQuota: bool
 }
 
+@export()
+type ConsumerModelAccess = {
+  modelName: string
+  expectedThroughputThousandsOfTokensPerMinute: int
+  platformTeamDeploymentMapping: string
+  platformTeamPoolMapping: string
+  outsideDeploymentName: string
+}
+
+@export()
 type ApiVersion = {
   version: string
   apiSpecUrl: string
 }
 
+@export()
+type AzureOpenAIResource = {
+  resourceGroupName: string
+  name: string
+}
 
+@export()
 type AzureOpenAIResourceOutput = {
   resourceId: string
   resourceGroupName: string
@@ -23,28 +39,22 @@ type AzureOpenAIResourceOutput = {
   endpoint: string
 }
 
+@export()
 type AzureOpenAIBackend = {
   aoaiResourceName: string
   backendId: string
 }
 
+@export()
 type AzureOpenAIResourcePool = {
   PoolName: string
   AzureOpenAIResourceNames: string[]
-  Pools: AzureOpenAIBackend[]
 }
 
 
-type ConsumerModelAccess = {
-  modelName: string
-  expectedThroughputThousandsOfTokensPerMinute: int
-  platformTeamDeploymentMapping: string
-  platformTeamPoolMapping: string
-}
-
+@export()
 type ConsumerDemand = {
   name: string
   consumerName: string
   requirements: ConsumerModelAccess[]
 }
-

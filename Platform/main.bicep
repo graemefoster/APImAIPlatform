@@ -1,14 +1,6 @@
 targetScope = 'subscription'
 
-type AzureOpenAIResource = {
-  resourceGroupName: string
-  name: string
-}
-
-type AzureOpenAIResourcePool = {
-  PoolName: string
-  AzureOpenAIResourceNames: string[]
-}
+import {AzureOpenAIBackend, AzureOpenAIResource, AzureOpenAIResourcePool, ConsumerModelAccess, DeploymentRequirement, ConsumerDemand } from './types.bicep'
 
 type Configuration = {
   apimName: string
@@ -18,34 +10,11 @@ type Configuration = {
   azureOpenAiPools: AzureOpenAIResourcePool[]
 }
 
-type ConsumerModelAccess = {
-  modelName: string
-  expectedThroughputThousandsOfTokensPerMinute: int
-  platformTeamDeploymentMapping: string
-  platformTeamPoolMapping: string
-  outsideDeploymentName: string
-}
-
-type DeploymentRequirement = {
-  aoaiResourceGroupName: string
-  aoaiName: string
-  deploymentName: string
-  model: string
-  modelVersion: string
-  thousandsOfTokensPerMinute: int
-  isPTU: bool
-  enableDynamicQuota: bool
-}
-
-type ConsumerDemand = {
-  name: string
-  consumerName: string
-  requirements: ConsumerModelAccess[]
-}
-
 param platformResourceGroup string
 param location string
 param apimName string
+param appInsightsResourceGroup string
+param appInsightsName string
 param existingAoaiResources AzureOpenAIResource[]
 param aoaiPools AzureOpenAIResourcePool[]
 param deploymentRequirements DeploymentRequirement[]
@@ -56,17 +25,19 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   location: location
 }
 
-module apimFoundation 'Foundational/APIm/apim.bicep' = {
+module apimFoundation 'APIm/apim.bicep' = {
   name: '${deployment().name}-apim'
   scope: rg
   params: {
     apimName: apimName
+    appInsightsResourceGroup: appInsightsResourceGroup
+    appInsightsName: appInsightsName
   }
 }
 
 // Consider cross subscription here. Sometimes we need to create more AOAI resource in other subscriptions.
 // As long as the tenant is the same we can still use Entra to connect from APIm to AOAI.
-module azureOpenAIApimBackends 'Foundational/APIm/configureAoaiInApim.bicep' = {
+module azureOpenAIApimBackends 'APIm/configureAoaiInApim.bicep' = {
   name: '${deployment().name}-aoaiBackends'
   scope: rg
   params: {
@@ -76,7 +47,7 @@ module azureOpenAIApimBackends 'Foundational/APIm/configureAoaiInApim.bicep' = {
   }
 }
 
-module azureOpenAIApis 'Foundational/APIm/aoaiapi.bicep' = {
+module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
   name: '${deployment().name}-aoaiApi'
   scope: rg
   params: {
@@ -94,14 +65,14 @@ module azureOpenAIApis 'Foundational/APIm/aoaiapi.bicep' = {
   }
 }
 
-module azureOpenAiDeployments './Foundational/AOAI/aoaideployments.bicep' = {
+module azureOpenAiDeployments 'AOAI/aoaideployments.bicep' = {
   name: '${deployment().name}-aoaiDeployments'
   params: {
     deploymentRequirements: deploymentRequirements
   }
 }
 
-module apimProductMappings './Foundational/Consumers/consumerDemands.bicep' = {
+module apimProductMappings 'Consumers/consumerDemands.bicep' = {
   name: '${deployment().name}-consumerDemands'
   scope: rg
   params: {
