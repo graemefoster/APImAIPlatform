@@ -8,7 +8,6 @@
     <!-- Throttle, authorize, validate, cache, or transform the requests -->
     <inbound>
         <base />
-        <authentication-managed-identity resource="https://cognitiveservices.azure.com/" />
         <set-variable name="newDeploymentId" value="@{
             var dictionary = new Dictionary<string, string>();
 
