@@ -62,8 +62,13 @@ var poolMapString = join(
   map(consumer.requirements, r => 'dictionary["${r.outsideDeploymentName}"] = "${r.platformTeamPoolMapping}";'),
   '\n'
 )
+var tokenRateLimiting = join(
+  map(consumer.requirements, r => '<when condition="@(context.Request.MatchedParameters["deployment-id"] == "${r.outsideDeploymentName}")">\n<azure-openai-token-limit tokens-per-minute="${r.expectedThroughputThousandsOfTokensPerMinute * 1000}" estimate-prompt-tokens="true" tokens-consumed-header-name="consumed-tokens" remaining-tokens-header-name="remaining-tokens" counter-key="${r.outsideDeploymentName}" />\n</when>'),
+  '\n'
+)
 var policyXml = replace(loadTextContent('./product-policy.xml'), '{policy-map}', requirementsString)
-var finalPolicyXml = replace(policyXml, '{policy-pool-map}', poolMapString)
+var policyXml2 = replace(policyXml, '{policy-pool-map}', poolMapString)
+var finalPolicyXml = replace(policyXml2, '{rate-limiting-section}', tokenRateLimiting)
 
 resource productFragment 'Microsoft.ApiManagement/service/products/policies@2023-05-01-preview' = {
   parent: apimProduct

@@ -37,7 +37,7 @@ param consumerDemands = [
       }
       {
         modelName: 'gpt-35-turbo'
-        expectedThroughputThousandsOfTokensPerMinute: 1
+        expectedThroughputThousandsOfTokensPerMinute: 2
         //contentSafetyFilter: {}
 
         platformTeamDeploymentMapping: 'testdeploy2'
@@ -70,6 +70,6 @@ param deploymentRequirements = [
     isPTU: false
     model: 'gpt-35-turbo'
     modelVersion: '0613'
-    thousandsOfTokensPerMinute: 1
+    thousandsOfTokensPerMinute: 5
   }
 ]
