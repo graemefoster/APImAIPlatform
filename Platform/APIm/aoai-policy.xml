@@ -1,12 +1,13 @@
 <policies>
     <inbound>
+        <authentication-managed-identity resource="https://cognitiveservices.azure.com/" />
+        <base />
         <azure-openai-emit-token-metric>
             <dimension name="Product ID" />
+            <dimension name="Operation ID" />
             <dimension name="Client IP address" value="@(context.Request.IpAddress)" />
             <dimension name="User ID" />
         </azure-openai-emit-token-metric>
-        <authentication-managed-identity resource="https://cognitiveservices.azure.com/" />
-        <base />
     </inbound>
     <backend>
         <base />
