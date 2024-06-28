@@ -46,5 +46,18 @@ resource aoaiApi 'Microsoft.ApiManagement/service/apis@2023-05-01-preview' = [
   }
 ]
 
+var policy = loadTextContent('./aoai-policy.xml')
+
+resource productFragment 'Microsoft.ApiManagement/service/apis/policies@2023-05-01-preview' = [
+  for index in range(0, length(azureOpenAiApis)): {
+    parent: aoaiApi[index]
+    name: 'policy'
+    properties: {
+      format: 'rawxml'
+      value: policy
+    }
+  }
+]
+
 output aoaiApiIds array = [for i in range(0, length(azureOpenAiApis)): aoaiApi[i].id]
 output aoaiApiNames array = [for i in range(0, length(azureOpenAiApis)): aoaiApi[i].name]
