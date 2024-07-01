@@ -1,14 +1,14 @@
 targetScope = 'resourceGroup'
 
-import { AzureOpenAIResource, AzureOpenAIResourceOutput } from '../types.bicep'
+import { AzureOpenAIResourceOutput } from '../types.bicep'
 
-param existingAoaiResource AzureOpenAIResource
+param existingAoaiResource AzureOpenAIResourceOutput
 param apimManagedIdentityPrincipalId string
 
 var cognitiveServicesUserRoleDefinitionId = '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
 
 resource aoaiResource 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' existing = {
-  name: existingAoaiResource.name
+  name: existingAoaiResource.resourceName
 }
 
 resource aoaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -25,10 +25,3 @@ resource aoaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-
-output aoaiInformation AzureOpenAIResourceOutput = {
-  resourceId: aoaiResource.id
-  resourceName: aoaiResource.name
-  resourceGroupName: resourceGroup().name
-  endpoint: aoaiResource.properties.endpoint
-}

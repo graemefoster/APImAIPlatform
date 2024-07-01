@@ -27,7 +27,6 @@ type ApiVersion = {
 
 @export()
 type AzureOpenAIResource = {
-  resourceGroupName: string
   name: string
 }
 
@@ -35,7 +34,8 @@ type AzureOpenAIResource = {
 type AzureOpenAIResourceOutput = {
   resourceId: string
   resourceGroupName: string
-  resourceName: string
+  inputName: string
+  resourceName: string //we prefix / add slug, etc
   endpoint: string
 }
 

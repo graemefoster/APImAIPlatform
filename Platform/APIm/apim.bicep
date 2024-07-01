@@ -1,19 +1,34 @@
 targetScope = 'resourceGroup'
 
 param apimName string
+param apimPublisherEmail string
+param apimPublisherName string
+param apimSubnetId string
 
-param appInsightsResourceGroup string
 param appInsightsName string
-
-param logAnalyticsWorkspaceResourceGroup string
 param logAnalyticsWorkspaceName string
 
-resource apim 'Microsoft.ApiManagement/service@2019-12-01' existing = {
+param location string = resourceGroup().location
+
+resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' = {
   name: apimName
+  location: location
+  sku: {
+    name: 'Developer'
+    capacity: 1
+  }
+  properties: {
+    publisherEmail: apimPublisherEmail
+    publisherName: apimPublisherName
+    publicNetworkAccess: 'Enabled'
+    virtualNetworkConfiguration: {
+      subnetResourceId: apimSubnetId
+    }
+    virtualNetworkType: 'External'
+  }
 }
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
-  scope: resourceGroup(logAnalyticsWorkspaceResourceGroup)
   name: logAnalyticsWorkspaceName
 }
 
@@ -37,9 +52,8 @@ resource apimDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-previ
   }
 }
 
-resource appInsights 'Microsoft.Insights/components@2015-05-01' existing = {
+resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
-  scope: resourceGroup(appInsightsResourceGroup)
 }
 
 //setup an APIm app-insights logger

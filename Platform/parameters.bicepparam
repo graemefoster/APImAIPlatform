@@ -1,17 +1,14 @@
 using './main.bicep'
 
 param location = 'australiaeast'
-param platformResourceGroup = 'api-centre'
-param apimName = 'grfapimaoai'
-param logAnalyticsWorkspaceResourceGroup = 'graemeopenai'
-param logAnalyticsWorkspaceName = 'law-test'
-param appInsightsName = 'grfinsightstest'
-param appInsightsResourceGroup = 'graemeopenai'
+param platformResourceGroup = 'aiplatform'
+param platformSlug = 'aiplat'
+param apimPublisherEmail = 'graemefoster@microsoft.com'
+param apimPublisherName = 'Graeme Foster'
 
-param existingAoaiResources = [
+param aoaiResources = [
   {
     name: 'graemeopenai'
-    resourceGroupName: 'graemeopenai'
   }
 ]
 

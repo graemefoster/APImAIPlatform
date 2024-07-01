@@ -1,22 +1,71 @@
 targetScope = 'subscription'
 
-import {AzureOpenAIBackend, AzureOpenAIResource, AzureOpenAIResourcePool, ConsumerModelAccess, DeploymentRequirement, ConsumerDemand } from './types.bicep'
+import {
+  AzureOpenAIBackend
+  AzureOpenAIResource
+  AzureOpenAIResourcePool
+  ConsumerModelAccess
+  DeploymentRequirement
+  ConsumerDemand
+} from './types.bicep'
 
 param platformResourceGroup string
+param platformSlug string
+param apimPublisherEmail string
+param apimPublisherName string
 param location string
-param apimName string
-param appInsightsResourceGroup string
-param appInsightsName string
-param logAnalyticsWorkspaceResourceGroup string
-param logAnalyticsWorkspaceName string
 param aoaiPools AzureOpenAIResourcePool[]
 param deploymentRequirements DeploymentRequirement[]
 param consumerDemands ConsumerDemand[]
-param existingAoaiResources AzureOpenAIResource[]
+param aoaiResources AzureOpenAIResource[]
 
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: platformResourceGroup
   location: location
+}
+
+var resourcePrefix = '${platformSlug}-${substring(uniqueString(platformResourceGroup, platformSlug, deployment().name), 0, 5)}-'
+var vnetName = '${resourcePrefix}-vnet'
+var apimName = '${resourcePrefix}-apim'
+var appInsightsName = '${resourcePrefix}-appi'
+var logAnalyticsWorkspaceName = '${resourcePrefix}-logs'
+
+module monitoring 'Foundation/monitoring.bicep' = {
+  name: '${deployment().name}-monitoring'
+  scope: rg
+  params: {
+    appInsightsName: appInsightsName
+    logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
+    location: location
+  }
+}
+
+module network 'Foundation/networks.bicep' = {
+  name: '${deployment().name}-network'
+  scope: rg
+  params: {
+    vnetName: vnetName
+  }
+}
+
+module aoais 'AOAI/aoais.bicep' = {
+  name: '${deployment().name}-aoais'
+  scope: rg
+  params: {
+    aoaiNames: aoaiResources
+    location: location
+    privateDnsZoneId: network.outputs.cogSearchPrivateDnsZoneId
+    privateEndpointSubnetId: network.outputs.peSubnetId
+    resourcePrefix: resourcePrefix
+  }
+}
+
+module azureOpenAiDeployments 'AOAI/aoaideployments.bicep' = {
+  name: '${deployment().name}-aoaiDeployments'
+  params: {
+    deploymentRequirements: deploymentRequirements
+  }
+  dependsOn: [aoais]
 }
 
 module apimFoundation 'APIm/apim.bicep' = {
@@ -24,10 +73,12 @@ module apimFoundation 'APIm/apim.bicep' = {
   scope: rg
   params: {
     apimName: apimName
-    appInsightsResourceGroup: appInsightsResourceGroup
     appInsightsName: appInsightsName
-    logAnalyticsWorkspaceResourceGroup: logAnalyticsWorkspaceResourceGroup
     logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
+    apimPublisherEmail: apimPublisherEmail
+    apimPublisherName: apimPublisherName
+    apimSubnetId: network.outputs.apimSubnetId
+    location: location
   }
 }
 
@@ -37,8 +88,8 @@ module azureOpenAIApimBackends 'APIm/configureAoaiInApim.bicep' = {
   name: '${deployment().name}-aoaiBackends'
   scope: rg
   params: {
-    apimName: apimName
-    existingAoaiResources: existingAoaiResources
+    apimName: apimFoundation.outputs.apimName
+    existingAoaiResources: aoaiResources
     aoaiBackendPools: aoaiPools
   }
 }
@@ -47,7 +98,7 @@ module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
   name: '${deployment().name}-aoaiApi'
   scope: rg
   params: {
-    apimName: apimName
+    apimName: apimFoundation.outputs.apimName
     azureOpenAiApis: [
       {
         apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2022-12-01.json'
@@ -59,20 +110,14 @@ module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
       }
     ]
   }
-}
-
-module azureOpenAiDeployments 'AOAI/aoaideployments.bicep' = {
-  name: '${deployment().name}-aoaiDeployments'
-  params: {
-    deploymentRequirements: deploymentRequirements
-  }
+  dependsOn: [azureOpenAIApimBackends]
 }
 
 module apimProductMappings 'Consumers/consumerDemands.bicep' = {
   name: '${deployment().name}-consumerDemands'
   scope: rg
   params: {
-    apimName: apimName
+    apimName: apimFoundation.outputs.apimName
     consumerDemands: consumerDemands
     apiNames: azureOpenAIApis.outputs.aoaiApiNames
   }
