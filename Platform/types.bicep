@@ -1,6 +1,5 @@
 @export()
 type DeploymentRequirement = {
-  aoaiResourceGroupName: string
   aoaiName: string
   deploymentName: string
   model: string

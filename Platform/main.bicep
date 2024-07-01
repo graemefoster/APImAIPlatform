@@ -54,7 +54,7 @@ module aoais 'AOAI/aoais.bicep' = {
   params: {
     aoaiNames: aoaiResources
     location: location
-    privateDnsZoneId: network.outputs.cogSearchPrivateDnsZoneId
+    privateDnsZoneId: network.outputs.openAiPrivateDnsZoneId
     privateEndpointSubnetId: network.outputs.peSubnetId
     resourcePrefix: resourcePrefix
   }
@@ -62,8 +62,10 @@ module aoais 'AOAI/aoais.bicep' = {
 
 module azureOpenAiDeployments 'AOAI/aoaideployments.bicep' = {
   name: '${deployment().name}-aoaiDeployments'
+  scope: rg
   params: {
     deploymentRequirements: deploymentRequirements
+    aoaiOutputs: aoais.outputs.aoaiResources
   }
   dependsOn: [aoais]
 }
@@ -89,7 +91,7 @@ module azureOpenAIApimBackends 'APIm/configureAoaiInApim.bicep' = {
   scope: rg
   params: {
     apimName: apimFoundation.outputs.apimName
-    existingAoaiResources: aoaiResources
+    aoaiResources: aoais.outputs.aoaiResources
     aoaiBackendPools: aoaiPools
   }
 }

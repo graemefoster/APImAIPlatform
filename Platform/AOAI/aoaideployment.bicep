@@ -12,6 +12,15 @@ resource aoai 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' existing
   name: aoaiName
 }
 
+//create a content filter policy 
+module resposibleAiPolicy 'aoai-rai-policy.bicep' = {
+  name: '${deployment().name}-rai-policy'
+  params: {
+    openAiServiceName: aoai.name
+    policyName: '${deploymentName}-rai-policy'
+  }
+}
+
 resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
   name: deploymentName
   parent: aoai
@@ -27,5 +36,6 @@ resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-0
     }
     versionUpgradeOption: 'OnceCurrentVersionExpired'
     dynamicThrottlingEnabled: enableDynamicQuota
+    raiPolicyName: resposibleAiPolicy.outputs.responsibleAiPolicyName
   }
 }

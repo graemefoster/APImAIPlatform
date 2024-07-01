@@ -55,7 +55,6 @@ param consumerDemands = [
 param deploymentRequirements = [
   {
     aoaiName: 'graemeopenai'
-    aoaiResourceGroupName: 'graemeopenai'
     deploymentName: 'testdeploy'
     enableDynamicQuota: false
     isPTU: false
@@ -65,7 +64,6 @@ param deploymentRequirements = [
   }
   {
     aoaiName: 'graemeopenai'
-    aoaiResourceGroupName: 'graemeopenai'
     deploymentName: 'testdeploy2'
     enableDynamicQuota: false
     isPTU: false

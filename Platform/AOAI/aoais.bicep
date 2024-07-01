@@ -2,6 +2,7 @@ targetScope = 'resourceGroup'
 
 import {
   AzureOpenAIResource
+  AzureOpenAIResourceOutput
 } from '../types.bicep'
 
 param aoaiNames AzureOpenAIResource[]
@@ -24,3 +25,4 @@ module aoai './aoai.bicep' = [
   }
 ]
 
+output aoaiResources AzureOpenAIResourceOutput[] = [for idx in range(0, length(aoaiNames)): aoai[idx].outputs.aoaiInformation]

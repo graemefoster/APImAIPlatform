@@ -13,6 +13,9 @@ param location string = resourceGroup().location
 resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' = {
   name: apimName
   location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
   sku: {
     name: 'Developer'
     capacity: 1

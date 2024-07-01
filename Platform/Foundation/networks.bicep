@@ -142,12 +142,12 @@ resource peSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' = {
   }
 }
 
-resource cogSearchPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.search.windows.net'
+resource openAiPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.openai.azure.com'
   location: 'global'
 
   resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
-    name: 'privatelink.search.windows.net-link'
+    name: 'privatelink.openai.azure.com-link'
     location: 'global'
     properties: {
       registrationEnabled: false
@@ -157,8 +157,7 @@ resource cogSearchPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' 
     }
   }
 }
-
 output vnetId string = vnet.id
 output apimSubnetId string = apimSubnet.id
 output peSubnetId string = peSubnet.id
-output cogSearchPrivateDnsZoneId string = cogSearchPrivateDnsZone.id
+output openAiPrivateDnsZoneId string = openAiPrivateDnsZone.id

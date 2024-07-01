@@ -9,6 +9,7 @@ param location string = resourceGroup().location
 param resourcePrefix string
 
 var aoaiResourceName = '${resourcePrefix}-${aoaiName}-aoai'
+
 resource aoai 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
   name: aoaiResourceName
   location: location
@@ -20,11 +21,13 @@ resource aoai 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
     name: 'S0'
   }
   properties: {
-    publicNetworkAccess: 'Enabled'
+    publicNetworkAccess: 'Disabled'
+    disableLocalAuth: true
     networkAcls: {
       defaultAction: 'Deny'
       ipRules: []
       virtualNetworkRules: []
+      bypass: 'None'
     }
     customSubDomainName: aoaiResourceName
   }
