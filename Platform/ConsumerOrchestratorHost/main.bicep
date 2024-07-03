@@ -51,6 +51,6 @@ resource acrPushRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 }
 
 
-output acrHostName string = acr.properties.dataEndpointHostNames[0]
+output acrHostName string = acr.properties.loginServer
 output ghActionsClientId string = githubIdentity.properties.clientId
 
