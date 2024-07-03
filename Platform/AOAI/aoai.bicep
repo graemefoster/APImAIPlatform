@@ -7,6 +7,7 @@ param privateDnsZoneId string
 param privateEndpointSubnetId string
 param location string = resourceGroup().location
 param resourcePrefix string
+param logAnalyticsId string
 
 var aoaiResourceName = '${resourcePrefix}-${aoaiName}-aoai'
 
@@ -30,6 +31,26 @@ resource aoai 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
       bypass: 'None'
     }
     customSubDomainName: aoaiResourceName
+  }
+}
+
+resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: aoai
+  name: 'diagnostics'
+  properties: {
+    workspaceId: logAnalyticsId
+    logs: [
+      {
+        categoryGroup: 'AllLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
   }
 }
 

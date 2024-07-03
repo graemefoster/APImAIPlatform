@@ -57,6 +57,7 @@ module aoais 'AOAI/aoais.bicep' = {
     privateDnsZoneId: network.outputs.openAiPrivateDnsZoneId
     privateEndpointSubnetId: network.outputs.peSubnetId
     resourcePrefix: resourcePrefix
+    logAnalyticsId: monitoring.outputs.logAnalyticsId
   }
 }
 

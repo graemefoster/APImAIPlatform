@@ -1,0 +1,38 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  text:
+    type: string
+    default: Hello!
+outputs:
+  output_prompt:
+    type: string
+    reference: ${echo_my_prompt.output}
+nodes:
+- name: llm_node_nr6q
+  type: llm
+  source:
+    type: code
+    path: llm_node_nr6q.jinja2
+  inputs:
+    deployment_name: graeme-gpt-35-turbo-123
+    max_tokens: 2000
+    question: Write a Haiku about this.
+    item: ${hello_prompt.output}
+  connection: graeme-apim-backed
+  api: chat
+- name: hello_prompt
+  type: prompt
+  source:
+    type: code
+    path: hello.jinja2
+  inputs:
+    text: ${inputs.text}
+- name: echo_my_prompt
+  type: python
+  source:
+    type: code
+    path: hello.py
+  inputs:
+    input1: ${llm_node_nr6q.output}

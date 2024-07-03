@@ -1,0 +1,3 @@
+[submodule "ConsumerRequirements/APIMAIPlatformConsumerRequirements"]
+	path = ConsumerRequirements/APIMAIPlatformConsumerRequirements
+	url = https://graemefoster@github.com/graemefoster/APIMAIPlatformConsumerRequirements.git

@@ -10,6 +10,7 @@ param privateDnsZoneId string
 param privateEndpointSubnetId string
 param resourcePrefix string
 param location string = resourceGroup().location
+param logAnalyticsId string
 
 module aoai './aoai.bicep' = [
   for aoaiName in aoaiNames: {
@@ -21,6 +22,7 @@ module aoai './aoai.bicep' = [
       privateEndpointSubnetId: privateEndpointSubnetId
       location: location
       resourcePrefix: resourcePrefix
+      logAnalyticsId: logAnalyticsId
     }
   }
 ]
