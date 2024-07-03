@@ -1,21 +1,24 @@
 targetScope = 'resourceGroup'
 
-import { ConsumerModelAccess, ConsumerDemand } from '../types.bicep'
+import { ConsumerModelAccess, MappedConsumerDemand } from '../types.bicep'
+import { ConsumerDemand } from '../../ConsumerRequirements/APIMAIPlatformConsumerRequirements/types.bicep'
 
 param apimName string
 param apiNames string[]
-param consumer ConsumerDemand
+param mappedDemand MappedConsumerDemand
+param consumerDemand ConsumerDemand
+param environmentName string
 
 resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
   name: apimName
 }
 
 resource apimProduct 'Microsoft.ApiManagement/service/products@2023-05-01-preview' = {
-  name: 'product-${consumer.name}'
+  name: 'product-${mappedDemand.consumerName}'
   parent: apim
   properties: {
-    displayName: consumer.consumerName
-    description: 'Product for consumer ${consumer.consumerName}'
+    displayName: mappedDemand.consumerName
+    description: 'Product for consumer ${mappedDemand.consumerName}'
     approvalRequired: false
     subscriptionRequired: true
     subscriptionsLimit: 1
@@ -32,26 +35,18 @@ resource apimProduct 'Microsoft.ApiManagement/service/products@2023-05-01-previe
   ]
 }
 
-resource apimSubscription 'Microsoft.ApiManagement/service/subscriptions@2023-05-01-preview' = {
-  name: 'subscription-${consumer.name}'
-  parent: apim
-  properties: {
-    displayName: 'Subscription for ${consumer.consumerName}'
-    scope: '/products/${apimProduct.name}'
-  }
-}
-
 //build up the policy for the Product. Start with rewrite-url to make the inside deployment correct, but keep a stable outside deployment
 var requirementsString = join(
-  map(consumer.requirements, r => 'dictionary["${r.outsideDeploymentName}"] = "${r.platformTeamDeploymentMapping}";'),
+  map(mappedDemand.requirements, r => 'dictionary["${r.outsideDeploymentName}"] = "${r.platformTeamDeploymentMapping}";'),
   '\n'
 )
 var poolMapString = join(
-  map(consumer.requirements, r => 'dictionary["${r.outsideDeploymentName}"] = "${r.platformTeamPoolMapping}";'),
+  map(mappedDemand.requirements, r => 'dictionary["${r.outsideDeploymentName}"] = "${r.platformTeamPoolMapping}";'),
   '\n'
 )
+
 var tokenRateLimiting = join(
-  map(consumer.requirements, r => '<when condition="@(context.Request.MatchedParameters["deployment-id"] == "${r.outsideDeploymentName}")">\n<azure-openai-token-limit tokens-per-minute="${r.expectedThroughputThousandsOfTokensPerMinute * 1000}" estimate-prompt-tokens="true" tokens-consumed-header-name="consumed-tokens" remaining-tokens-header-name="remaining-tokens" counter-key="${r.outsideDeploymentName}" />\n</when>'),
+  map(mappedDemand.requirements, r => '<when condition="@(context.Request.MatchedParameters["deployment-id"] == "${r.outsideDeploymentName}")">\n<azure-openai-token-limit tokens-per-minute="${filter(consumerDemand.models, cd => r.id == cd.id)[0].environments[environmentName].thousandsOfTokens * 1000}" estimate-prompt-tokens="true" tokens-consumed-header-name="consumed-tokens" remaining-tokens-header-name="remaining-tokens" counter-key="${r.outsideDeploymentName}" />\n</when>'),
   '\n'
 )
 var policyXml = replace(loadTextContent('./product-policy.xml'), '{policy-map}', requirementsString)

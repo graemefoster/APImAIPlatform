@@ -11,8 +11,7 @@ type DeploymentRequirement = {
 
 @export()
 type ConsumerModelAccess = {
-  modelName: string
-  expectedThroughputThousandsOfTokensPerMinute: int
+  id: string
   platformTeamDeploymentMapping: string
   platformTeamPoolMapping: string
   outsideDeploymentName: string
@@ -50,10 +49,28 @@ type AzureOpenAIResourcePool = {
   AzureOpenAIResourceNames: string[]
 }
 
-
 @export()
-type ConsumerDemand = {
-  name: string
+type MappedConsumerDemand = {
   consumerName: string
   requirements: ConsumerModelAccess[]
+}
+
+@export()
+type ConsumerDemandEnvironments = {
+  dev: ConsumerDemandEnvironment
+  test: ConsumerDemandEnvironment
+  prod: ConsumerDemandEnvironment
+}
+
+@export()
+type ConsumerDemandEnvironment = {
+  thousandsOfTokens: int
+  deployAt: string
+}
+
+@export()
+type ConsumerDemandModel = {
+  id: string
+  modelName: string
+  environments: ConsumerDemandEnvironment
 }

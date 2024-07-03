@@ -6,18 +6,26 @@ import {
   AzureOpenAIResourcePool
   ConsumerModelAccess
   DeploymentRequirement
-  ConsumerDemand
+  MappedConsumerDemand
 } from './types.bicep'
+
+import {
+  ConsumerDemand
+} from '../ConsumerRequirements/APIMAIPlatformConsumerRequirements/types.bicep'
 
 param platformResourceGroup string
 param platformSlug string
 param apimPublisherEmail string
 param apimPublisherName string
+param ghRepo string
+param ghUsername string
 param location string
 param aoaiPools AzureOpenAIResourcePool[]
 param deploymentRequirements DeploymentRequirement[]
+param mappedDemands MappedConsumerDemand[]
 param consumerDemands ConsumerDemand[]
 param aoaiResources AzureOpenAIResource[]
+param environmentName string = 'dev'
 
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: platformResourceGroup
@@ -28,7 +36,9 @@ var resourcePrefix = '${platformSlug}-${substring(uniqueString(platformResourceG
 var vnetName = '${resourcePrefix}-vnet'
 var apimName = '${resourcePrefix}-apim'
 var appInsightsName = '${resourcePrefix}-appi'
+var acrName = replace('${resourcePrefix}-acr', '-', '')
 var logAnalyticsWorkspaceName = '${resourcePrefix}-logs'
+var deploymentIdentityName = '${resourcePrefix}-uami'
 
 module monitoring 'Foundation/monitoring.bicep' = {
   name: '${deployment().name}-monitoring'
@@ -122,6 +132,20 @@ module apimProductMappings 'Consumers/consumerDemands.bicep' = {
   params: {
     apimName: apimFoundation.outputs.apimName
     consumerDemands: consumerDemands
+    mappedDemands: mappedDemands
     apiNames: azureOpenAIApis.outputs.aoaiApiNames
+    environmentName: environmentName
+  }
+}
+
+module consumerHostingPlatform './ConsumerOrchestratorHost/main.bicep' = {
+  name: '${deployment().name}-consumerHosting'
+  scope: rg
+  params: {
+    acrName: acrName
+    location: location
+    ghRepo: ghRepo
+    ghUsername: ghUsername
+    deploymentIdentityName: deploymentIdentityName
   }
 }
