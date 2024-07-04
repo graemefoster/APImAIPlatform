@@ -1,5 +1,5 @@
 $schema: https://azuremlschemas.azureedge.net/promptflow/latest/AzureOpenAIConnection.schema.json
-name: azure_open_ai_connection
+name: graeme-apim-backed
 type: azure_open_ai
 api_key: "<to-be-replaced>"
 api_base: "https://aiplat-cz7m4--apim.azure-api.net/"
