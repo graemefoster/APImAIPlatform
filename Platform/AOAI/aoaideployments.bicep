@@ -3,6 +3,7 @@ import { DeploymentRequirement, AzureOpenAIResourceOutput } from '../types.bicep
 param deploymentRequirements DeploymentRequirement[]
 param aoaiOutputs AzureOpenAIResourceOutput[]
 
+@batchSize(1)
 module aoaiDeployment './aoaideployment.bicep' = [
   for deployment in deploymentRequirements: {
     name: '${az.deployment().name}-${deployment.deploymentName}'

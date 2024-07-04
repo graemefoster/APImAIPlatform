@@ -132,7 +132,6 @@ resource apimSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' = {
   }
 }
 
-
 resource peSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' = {
   name: 'private-endpoints'
   parent: vnet
@@ -140,6 +139,24 @@ resource peSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' = {
     addressPrefix: cidrSubnet(addressSpace, 24, 1)
     privateEndpointNetworkPolicies: 'Enabled'
   }
+  dependsOn: [apimSubnet]
+}
+
+resource vnetIntegrationSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' = {
+  name: 'vnet-integration'
+  parent: vnet
+  properties: {
+    addressPrefix: cidrSubnet(addressSpace, 24, 2)
+    delegations: [
+      {
+        name: 'AppServiceDelegation'
+        properties: {
+          serviceName: 'Microsoft.Web/serverFarms'
+        }
+      }
+    ]
+  }
+  dependsOn: [peSubnet]
 }
 
 resource openAiPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
@@ -161,3 +178,4 @@ output vnetId string = vnet.id
 output apimSubnetId string = apimSubnet.id
 output peSubnetId string = peSubnet.id
 output openAiPrivateDnsZoneId string = openAiPrivateDnsZone.id
+output vnetIntegrationSubnetId string = vnetIntegrationSubnet.id

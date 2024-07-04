@@ -21,3 +21,4 @@ module consumer './consumerDemand.bicep' = [
     }
   }
 ]
+

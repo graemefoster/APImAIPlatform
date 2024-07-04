@@ -35,10 +35,13 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
 var resourcePrefix = '${platformSlug}-${substring(uniqueString(platformResourceGroup, platformSlug, deployment().name), 0, 5)}-'
 var vnetName = '${resourcePrefix}-vnet'
 var apimName = '${resourcePrefix}-apim'
+var aspName = '${resourcePrefix}-asp'
 var appInsightsName = '${resourcePrefix}-appi'
+var webappname = '${resourcePrefix}-pf-app'
 var acrName = replace('${resourcePrefix}-acr', '-', '')
 var logAnalyticsWorkspaceName = '${resourcePrefix}-logs'
 var deploymentIdentityName = '${resourcePrefix}-uami'
+var acrPullIdentityName = '${resourcePrefix}-acrpuller-uami'
 
 module monitoring 'Foundation/monitoring.bicep' = {
   name: '${deployment().name}-monitoring'
@@ -147,6 +150,24 @@ module consumerHostingPlatform './ConsumerOrchestratorHost/main.bicep' = {
     ghRepo: ghRepo
     ghUsername: ghUsername
     deploymentIdentityName: deploymentIdentityName
-    envName: environmentName
+    environmentName: environmentName
+    appServicePlanName: aspName
+    acrPullIdentityName: acrPullIdentityName
+  }
+}
+
+//Simplification - this isn't technically part of the platform but we are going to deploy a web-app to assist our PromptFlow consumer
+module consumerPromptFlow './SamplePromptFlowApp/main.bicep' = {
+  name: '${deployment().name}-consumerPromptFlow'
+  scope: rg
+  params: {
+    acrName: consumerHostingPlatform.outputs.acrName
+    appInsightsName: monitoring.outputs.appInsightsName
+    appServicePlanId: consumerHostingPlatform.outputs.aspId
+    vnetIntegrationSubnet: network.outputs.vnetIntegrationSubnetId
+    webAppName: webappname
+    location: location
+    logAnalyticsId: monitoring.outputs.logAnalyticsId
+    acrManagedIdentityName: consumerHostingPlatform.outputs.acrPullerManagedIdentityName
   }
 }
