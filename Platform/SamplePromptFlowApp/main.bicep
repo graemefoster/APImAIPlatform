@@ -1,4 +1,6 @@
 param logAnalyticsId string
+param apimName string
+param apimUsername string
 param appInsightsName string
 param appServicePlanId string
 param acrName string
@@ -17,6 +19,34 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existin
 
 resource appi 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
+}
+
+resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
+  name: apimName
+}
+
+resource apimSubscription 'Microsoft.ApiManagement/service/subscriptions@2023-05-01-preview' existing = {
+  parent: apim
+  name: apimUsername
+}
+
+resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
+  location: location
+  name: '${webAppName}-kv'
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+  }
+  resource apimProductKey 'secrets' = {
+    name: 'apim-product-key'
+    properties: {
+      value: apimSubscription.properties.primaryKey
+      contentType: 'text/plain'
+    }
+  }
 }
 
 resource webApp 'Microsoft.Web/sites@2023-12-01' = {
@@ -46,6 +76,18 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'APPINSIGHTS_CONNECTION_STRING'
           value: appi.properties.ConnectionString
+        }
+        {
+          name: 'WEBSITES_PORT'
+          value: '8080'
+        }
+        {
+          name: 'OPEN_AI_CONNECTION_API_KEY'
+          value: apimSubscription.properties.primaryKey
+        }
+        {
+          name: 'OPEN_AI_CONNECTION_BASE'
+          value: apim.properties.gatewayUrl
         }
       ]
     }

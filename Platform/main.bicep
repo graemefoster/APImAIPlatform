@@ -169,5 +169,7 @@ module consumerPromptFlow './SamplePromptFlowApp/main.bicep' = {
     location: location
     logAnalyticsId: monitoring.outputs.logAnalyticsId
     acrManagedIdentityName: consumerHostingPlatform.outputs.acrPullerManagedIdentityName
+    apimName: apimName
+    apimUsername: 'consumer-1'
   }
 }
