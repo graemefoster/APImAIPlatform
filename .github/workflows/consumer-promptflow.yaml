@@ -33,7 +33,7 @@ jobs:
 
       - name: Build PromptFlow Dockerfile
         run: |
-          pf connection create -f ./connections/aoai.yaml --set api_key=${{ secrets.AOAI_KEY }}
+          pf connection create -f ./Consumers/connections/aoai.yaml --set api_key=${{ secrets.AOAI_KEY }}
           pf flow build --source ./Consumers/PromptFlow/new-standard-flow-created-at-2024-7-2/ --output ./dist --format docker
         
       - name: Build Docker image
