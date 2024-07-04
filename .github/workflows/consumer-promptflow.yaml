@@ -28,13 +28,13 @@ jobs:
       
       - name: Install Promptflow tools
         run: |
-          pip install promptflow-tools
-      
+          pip install -r ./Consumers/PromptFlow/new-standard-flow-created-at-2024-7-2/requirements.txt
+          pip install keyrings.alt
+
       - name: Build PromptFlow Dockerfile
         run: |
-          cd ./Consumers/PromptFlow/new-standard-flow-created-at-2024-7-2/
-          pf connection create -f ./connections/aoai.yaml --set api_key="${{ secrets.AOAI_KEY }}"
-          pf flow build --source . --output ./dist --format docker
+          pf connection create -f ./connections/aoai.yaml --set api_key=${{ secrets.AOAI_KEY }}
+          pf flow build --source ./Consumers/PromptFlow/new-standard-flow-created-at-2024-7-2/ --output ./dist --format docker
         
       - name: Build Docker image
         run: |
