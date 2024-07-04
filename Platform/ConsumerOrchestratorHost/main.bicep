@@ -4,6 +4,7 @@ param deploymentIdentityName string
 param acrName string
 param ghRepo string
 param ghUsername string
+param environmentName string
 param location string = resourceGroup().location
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
@@ -22,13 +23,13 @@ resource githubIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-0
   location: location
 
   resource githubFederation 'federatedIdentityCredentials' = {
-    name: 'federatedIdentityCredentials'
+    name: 'federatedIdentityCredentials-${environmentName}'
     properties: {
       audiences: [
         'api://AzureADTokenExchange'
       ]
       issuer: 'https://token.actions.githubusercontent.com'
-      subject: 'repo:${ghUsername}/${ghRepo}:environment:dev'
+      subject: 'repo:${ghUsername}/${ghRepo}:environment:${environmentName}'
     }
   }
 }

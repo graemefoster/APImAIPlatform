@@ -147,5 +147,6 @@ module consumerHostingPlatform './ConsumerOrchestratorHost/main.bicep' = {
     ghRepo: ghRepo
     ghUsername: ghUsername
     deploymentIdentityName: deploymentIdentityName
+    envName: environmentName
   }
 }
