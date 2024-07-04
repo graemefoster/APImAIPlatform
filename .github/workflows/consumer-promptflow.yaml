@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   build:
+    environment: dev
     runs-on: ubuntu-latest
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
