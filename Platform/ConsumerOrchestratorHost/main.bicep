@@ -28,7 +28,7 @@ resource githubIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-0
         'api://AzureADTokenExchange'
       ]
       issuer: 'https://token.actions.githubusercontent.com'
-      subject: 'repo:${ghUsername}/${ghRepo}' //:environment:${ghEnvName}'
+      subject: 'repo:${ghUsername}/${ghRepo}:environment:dev'
     }
   }
 }
