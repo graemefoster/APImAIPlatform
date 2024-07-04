@@ -1,7 +1,7 @@
 $schema: https://azuremlschemas.azureedge.net/promptflow/latest/AzureOpenAIConnection.schema.json
 name: graeme-apim-backed
 type: azure_open_ai
-api_key: "<to-be-replaced>"
-api_base: "https://aiplat-cz7m4--apim.azure-api.net/"
+api_key: "${env:OPEN_AI_CONNECTION_API_KEY}"
+api_base: "${env:OPEN_AI_CONNECTION_BASE}"
 api_type: "azure"
 api_version: "2024-04-01-preview"
