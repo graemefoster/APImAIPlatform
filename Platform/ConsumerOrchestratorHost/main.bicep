@@ -4,6 +4,7 @@ param deploymentIdentityName string
 param acrName string
 param ghRepo string
 param ghUsername string
+param appServicePlanName string
 param environmentName string
 param location string = resourceGroup().location
 
@@ -48,6 +49,20 @@ resource acrPushRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
     principalId: githubIdentity.properties.principalId
     principalType: 'ServicePrincipal'
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', acrPush)
+  }
+}
+
+//app service to host the PromptFlows
+resource appservice 'Microsoft.Web/serverfarms@2023-12-01' = {
+  location: location
+  name: appServicePlanName
+  sku: {
+    name: 'P1v3'
+    capacity: 1
+  }
+  properties: {
+    zoneRedundant: false
+    reserved: true
   }
 }
 
