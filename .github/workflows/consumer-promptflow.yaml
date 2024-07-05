@@ -47,17 +47,15 @@ jobs:
           pip install keyrings.alt
 
       - name: Build PromptFlow Dockerfile
+        working-directory: ./Consumers/PromptFlow/new-standard-flow-created-at-2024-7-2/
         run: |
-          pf connection create -f ./Consumers/PromptFlow/connections/graeme-apim-backed.yaml
-          pf flow build --source ./Consumers/PromptFlow/new-standard-flow-created-at-2024-7-2/ --output ./dist --format docker
+          pf connection create -f ../connections/graeme-apim-backed.yaml --set api_key='${env:OPEN_AI_CONNECTION_API_KEY}' api_base='${env:OPEN_AI_CONNECTION_BASE}'
+          pf flow build --source . --output ./dist --format docker
         
       - name: Build Docker image
+        working-directory: ./Consumers/PromptFlow/new-standard-flow-created-at-2024-7-2/
         run: |
-          docker build -t promptflow-consumer:latest ./dist
-        
-      - name: Push Docker image
-        run: |
-          docker build -t aiplatcz7m4acr.azurecr.io/promptflows/consumer-1:latest ./dist
+          docker build -t aiplatcz7m4acr.azurecr.io/promptflows/consumer-1:0.1 ./dist
 
       - name: Push Promptflow Docker image to ACR
-        run: docker push aiplatcz7m4acr.azurecr.io/promptflows/consumer-1:latest
+        run: docker push aiplatcz7m4acr.azurecr.io/promptflows/consumer-1:0.1
