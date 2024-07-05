@@ -76,3 +76,4 @@ resource appInsightsLogger 'Microsoft.ApiManagement/service/loggers@2023-05-01-p
 
 output apimId string = apim.id
 output apimName string = apim.name
+output apimUri string = apim.properties.gatewayUrl
