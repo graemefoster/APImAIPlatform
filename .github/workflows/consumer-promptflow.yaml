@@ -49,7 +49,7 @@ jobs:
       - name: Build PromptFlow Dockerfile
         working-directory: ./Consumers/PromptFlow/new-standard-flow-created-at-2024-7-2/
         run: |
-          pf connection create -f ../connections/graeme-apim-backed.yaml
+          pf connection create -f ../connections/graeme_apim_backed.yaml
           pf flow build --source . --output ./dist --format docker
         
       - name: Build Docker image

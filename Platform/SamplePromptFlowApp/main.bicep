@@ -119,16 +119,16 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   }
   properties: {
     serverFarmId: appServicePlanId
-    vnetImagePullEnabled: true
+    vnetImagePullEnabled: false
     virtualNetworkSubnetId: vnetIntegrationSubnet
     keyVaultReferenceIdentity: kvSecretsReaderIdentity.id
     siteConfig: {
       alwaysOn: true
       vnetRouteAllEnabled: true
-      linuxFxVersion: 'DOCKER|promptflows/consumer-1:latest'
+      linuxFxVersion: 'DOCKER|promptflows/consumer-1:0.1'
       acrUseManagedIdentityCreds: true
       acrUserManagedIdentityID: uami.properties.clientId
-      appCommandLine: 'start.sh'
+      appCommandLine: 'bash start.sh'
       appSettings: [
         {
           name: 'DOCKER_REGISTRY_SERVER_URL'
@@ -143,12 +143,16 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           value: '8080'
         }
         {
-          name: 'GRAEME-APIM-BACKED_API_KEY'
+          name: 'GRAEME_APIM_BACKED_API_KEY'
           value: '@Microsoft.KeyVault(SecretUri=${kv.properties.vaultUri}/secrets/apim-product-key)'
         }
         {
           name: 'OPEN_AI_CONNECTION_BASE'
           value: apim.properties.gatewayUrl
+        }
+        {
+          name: 'PROMPTFLOW_SERVING_ENGINE'
+          value: 'fastapi'
         }
       ]
     }
