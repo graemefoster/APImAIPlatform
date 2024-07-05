@@ -10,7 +10,7 @@ outputs:
     type: string
     reference: ${echo_my_prompt.output}
 nodes:
-- name: llm_node_nr6q1``
+- name: llm_node_nr6q
   type: llm
   source:
     type: code
