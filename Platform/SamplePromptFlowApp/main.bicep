@@ -126,6 +126,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
       linuxFxVersion: 'DOCKER|promptflows/consumer-1:latest'
       acrUseManagedIdentityCreds: true
       acrUserManagedIdentityID: uami.properties.clientId
+      appCommandLine: 'start.sh'
       appSettings: [
         {
           name: 'DOCKER_REGISTRY_SERVER_URL'
