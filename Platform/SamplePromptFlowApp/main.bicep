@@ -5,6 +5,7 @@ param appInsightsName string
 param appServicePlanId string
 param acrName string
 param webAppName string
+param peSubnet string
 param vnetIntegrationSubnet string
 param location string = resourceGroup().location
 param acrManagedIdentityName string
@@ -57,7 +58,7 @@ resource kvpe 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   location: location
   properties: {
     subnet: {
-      id: vnetIntegrationSubnet
+      id: peSubnet
     }
     privateLinkServiceConnections: [
       {

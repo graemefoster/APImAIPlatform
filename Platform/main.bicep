@@ -172,5 +172,6 @@ module consumerPromptFlow './SamplePromptFlowApp/main.bicep' = {
     apimName: apimName
     apimUsername: 'consumer-1'
     kvDnsZoneId: network.outputs.kvPrivateDnsZoneId
+    peSubnet: network.outputs.peSubnetId
   }
 }
