@@ -171,5 +171,6 @@ module consumerPromptFlow './SamplePromptFlowApp/main.bicep' = {
     acrManagedIdentityName: consumerHostingPlatform.outputs.acrPullerManagedIdentityName
     apimName: apimName
     apimUsername: 'consumer-1'
+    kvDnsZoneId: network.outputs.kvPrivateDnsZoneId
   }
 }

@@ -174,8 +174,28 @@ resource openAiPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
     }
   }
 }
+
+resource kvPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.vaultcore.azure.net'
+  location: 'global'
+
+  resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
+    name: 'privatelink.vaultcore.azure.net-link'
+    location: 'global'
+    properties: {
+      registrationEnabled: false
+      virtualNetwork: {
+        id: vnet.id
+      }
+    }
+  }
+
+}
+
 output vnetId string = vnet.id
 output apimSubnetId string = apimSubnet.id
 output peSubnetId string = peSubnet.id
 output openAiPrivateDnsZoneId string = openAiPrivateDnsZone.id
 output vnetIntegrationSubnetId string = vnetIntegrationSubnet.id
+output kvPrivateDnsZoneId string = kvPrivateDnsZone.id
+

@@ -35,9 +35,22 @@ resource apimProduct 'Microsoft.ApiManagement/service/products@2023-05-01-previe
   ]
 }
 
+resource apimSubscription 'Microsoft.ApiManagement/service/subscriptions@2023-05-01-preview' = {
+  name: 'subscription-${mappedDemand.consumerName}'
+  parent: apim
+  properties: {
+    scope: '/products/${apimProduct.name}'
+    displayName: 'Subscription for ${mappedDemand.consumerName}'
+     state: 'active'
+  }
+}
+
 //build up the policy for the Product. Start with rewrite-url to make the inside deployment correct, but keep a stable outside deployment
 var requirementsString = join(
-  map(mappedDemand.requirements, r => 'dictionary["${r.outsideDeploymentName}"] = "${r.platformTeamDeploymentMapping}";'),
+  map(
+    mappedDemand.requirements,
+    r => 'dictionary["${r.outsideDeploymentName}"] = "${r.platformTeamDeploymentMapping}";'
+  ),
   '\n'
 )
 var poolMapString = join(
@@ -46,7 +59,11 @@ var poolMapString = join(
 )
 
 var tokenRateLimiting = join(
-  map(mappedDemand.requirements, r => '<when condition="@(context.Request.MatchedParameters["deployment-id"] == "${r.outsideDeploymentName}")">\n<azure-openai-token-limit tokens-per-minute="${filter(consumerDemand.models, cd => r.id == cd.id)[0].environments[environmentName].thousandsOfTokens * 1000}" estimate-prompt-tokens="true" tokens-consumed-header-name="consumed-tokens" remaining-tokens-header-name="remaining-tokens" counter-key="${r.outsideDeploymentName}" />\n</when>'),
+  map(
+    mappedDemand.requirements,
+    r =>
+      '<when condition="@(context.Request.MatchedParameters["deployment-id"] == "${r.outsideDeploymentName}")">\n<azure-openai-token-limit tokens-per-minute="${filter(consumerDemand.models, cd => r.id == cd.id)[0].environments[environmentName].thousandsOfTokens * 1000}" estimate-prompt-tokens="true" tokens-consumed-header-name="consumed-tokens" remaining-tokens-header-name="remaining-tokens" counter-key="${r.outsideDeploymentName}" />\n</when>'
+  ),
   '\n'
 )
 var policyXml = replace(loadTextContent('./product-policy.xml'), '{policy-map}', requirementsString)
@@ -61,4 +78,3 @@ resource productFragment 'Microsoft.ApiManagement/service/products/policies@2023
     value: finalPolicyXml
   }
 }
-
