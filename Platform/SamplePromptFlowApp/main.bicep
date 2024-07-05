@@ -143,7 +143,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           value: '8080'
         }
         {
-          name: 'OPEN_AI_CONNECTION_API_KEY'
+          name: 'GRAEME-APIM-BACKED_API_KEY'
           value: '@Microsoft.KeyVault(SecretUri=${kv.properties.vaultUri}/secrets/apim-product-key)'
         }
         {
