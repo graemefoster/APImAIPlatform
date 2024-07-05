@@ -55,7 +55,7 @@ jobs:
       - name: Build Docker image
         working-directory: ./Consumers/PromptFlow/new-standard-flow-created-at-2024-7-2/
         run: |
-          docker build -t aiplatcz7m4acr.azurecr.io/promptflows/consumer-1:0.1 ./dist
+          docker build -t aiplatcz7m4acr.azurecr.io/promptflows/consumer-1:0.2 ./dist
 
       - name: Push Promptflow Docker image to ACR
-        run: docker push aiplatcz7m4acr.azurecr.io/promptflows/consumer-1:0.1
+        run: docker push aiplatcz7m4acr.azurecr.io/promptflows/consumer-1:0.2
