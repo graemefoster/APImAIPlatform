@@ -1,5 +1,5 @@
 param logAnalyticsId string
-param apimName string
+param aiCentralHostName string
 param appInsightsName string
 param appServicePlanId string
 param acrName string
@@ -20,10 +20,6 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existin
 
 resource appi 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
-}
-
-resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
-  name: apimName
 }
 
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
@@ -130,7 +126,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'OPEN_AI_CONNECTION_BASE'
-          value: apim.properties.gatewayUrl
+          value: aiCentralHostName
         }
         {
           name: 'PROMPTFLOW_SERVING_ENGINE'

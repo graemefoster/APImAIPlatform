@@ -35,14 +35,20 @@ resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
-var productToClientMappings = [
-  for mapping in consumerNameToAPImSubscriptionSecretMapping: {
-    name: 'AICentral__EntraIdsToSubscriptionKeys__${replace(filter(consumerNameToClientIdMapping, item => item.consumerName == mapping.consumerName)[0].entraClientId, '-', '_')}'
-    value: '@Microsoft.KeyVault(SecretUri=${mapping.secretUri})'
-  }
+var productToClientMappings =  [
+  for idx in range(0, length(consumerNameToAPImSubscriptionSecretMapping)): [
+    {
+      name: 'AICentral__ClaimsToKeys__${idx}__ClaimValue'
+      value: filter(consumerNameToClientIdMapping, item => item.consumerName == consumerNameToAPImSubscriptionSecretMapping[idx].consumerName)[0].entraClientId
+    }
+    {
+      name: 'AICentral__ClaimsToKeys__${idx}__SubscriptionKey'
+      value: '@Microsoft.KeyVault(SecretUri=${consumerNameToAPImSubscriptionSecretMapping[idx].secretUri})'
+    }
+  ]
 ]
 
-var allAppSettings = union(productToClientMappings, [
+var allAppSettings = union(flatten(productToClientMappings), [
   {
     name: 'DOCKER_REGISTRY_SERVER_URL'
     value: 'https://index.docker.io/v1'

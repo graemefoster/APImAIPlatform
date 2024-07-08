@@ -183,7 +183,7 @@ module consumerPromptFlow './SamplePromptFlowApp/main.bicep' = {
     location: location
     logAnalyticsId: monitoring.outputs.logAnalyticsId
     acrManagedIdentityName: consumerHostingPlatform.outputs.acrPullerManagedIdentityName
-    apimName: apimName
+    aiCentralHostName: 'https://${aiCentralAppName}.azurewebsites.net'
     kvDnsZoneId: network.outputs.kvPrivateDnsZoneId
     peSubnet: network.outputs.peSubnetId
   }
