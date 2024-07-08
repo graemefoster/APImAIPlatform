@@ -38,7 +38,7 @@ resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
 var productToClientMappings = [
   for mapping in consumerNameToAPImSubscriptionSecretMapping: {
     name: 'AICentral__EntraIdsToSubscriptionKeys__${replace(filter(consumerNameToClientIdMapping, item => item.consumerName == mapping.consumerName)[0].entraClientId, '-', '_')}'
-    value: mapping.secretUri
+    value: '@Microsoft.KeyVault(SecretUri=${mapping.secretUri})'
   }
 ]
 
