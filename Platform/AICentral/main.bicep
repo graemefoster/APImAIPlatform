@@ -106,7 +106,7 @@ resource aiCentral 'Microsoft.Web/sites@2023-12-01' = {
       vnetRouteAllEnabled: true
       ipSecurityRestrictions: []
       scmIpSecurityRestrictions: []
-      linuxFxVersion: 'DOCKER|graemefoster/aicentral:0.17.0-enhanced-backend0015'
+      linuxFxVersion: 'DOCKER|graemefoster/aicentral:0.17.0-enhanced-backend0020'
       appSettings: allAppSettings
     }
   }
