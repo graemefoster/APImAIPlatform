@@ -8,6 +8,11 @@ param apiNames string[]
 param mappedDemand MappedConsumerDemand
 param consumerDemand ConsumerDemand
 param environmentName string
+param platformKeyVaultName string
+
+resource platformKeyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+  name: platformKeyVaultName
+}
 
 resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
   name: apimName
@@ -45,6 +50,16 @@ resource apimSubscription 'Microsoft.ApiManagement/service/subscriptions@2023-05
   }
 }
 
+//These are not secrets - they just enable us to target policy for a consumer. The authentication / authorisation is done by a JWT.
+resource platformSubscriptionKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = { 
+  name: 'platformSubscriptionKey-${mappedDemand.consumerName}'
+  parent: platformKeyVault
+  properties: {
+    contentType: 'text/plan'
+    value: apimSubscription.listSecrets().primaryKey
+  }
+}
+
 //build up the policy for the Product. Start with rewrite-url to make the inside deployment correct, but keep a stable outside deployment
 var requirementsString = join(
   map(
@@ -78,3 +93,6 @@ resource productFragment 'Microsoft.ApiManagement/service/products/policies@2023
     value: finalPolicyXml
   }
 }
+
+output conasumerName string = consumerDemand.consumerName
+output subscriptionKeySecretUri string = platformSubscriptionKey.properties.secretUri

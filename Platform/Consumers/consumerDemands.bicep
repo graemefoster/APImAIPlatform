@@ -1,6 +1,6 @@
 targetScope = 'resourceGroup'
 
-import { ConsumerModelAccess, MappedConsumerDemand } from '../types.bicep'
+import { ConsumerModelAccess, MappedConsumerDemand, ConsumerDemandOutput } from '../types.bicep'
 import { ConsumerDemand } from '../../ConsumerRequirements/APIMAIPlatformConsumerRequirements/types.bicep'
 
 param apimName string
@@ -8,6 +8,7 @@ param mappedDemands MappedConsumerDemand[]
 param consumerDemands ConsumerDemand[]
 param apiNames string[]
 param environmentName string
+param platformKeyVaultName string
 
 module consumer './consumerDemand.bicep' = [
   for idx in range(0, length(mappedDemands)): {
@@ -18,7 +19,14 @@ module consumer './consumerDemand.bicep' = [
       apiNames: apiNames
       mappedDemand: filter(mappedDemands, md => md.consumerName == consumerDemands[idx].consumerName)[0]
       environmentName: environmentName
+      platformKeyVaultName: platformKeyVaultName
     }
   }
 ]
 
+output consumerResources ConsumerDemandOutput[] = [
+  for idx in range(0, length(consumerDemands)): {
+    consumerName: consumerDemands[idx].consumerName
+    secretUri: consumer[idx].outputs.subscriptionKeySecretUri
+  }
+]

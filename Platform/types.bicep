@@ -56,6 +56,12 @@ type MappedConsumerDemand = {
 }
 
 @export()
+type ConsumerDemandOutput = {
+  consumerName: string
+  secretUri: string
+}
+
+@export()
 type ConsumerDemandEnvironments = {
   dev: ConsumerDemandEnvironment
   test: ConsumerDemandEnvironment
@@ -73,4 +79,16 @@ type ConsumerDemandModel = {
   id: string
   modelName: string
   environments: ConsumerDemandEnvironment
+}
+
+@export()
+type ConsumerNameToApimSubscriptionKey = {
+  consumerName: string
+  secretUri: string
+}
+
+@export()
+type ConsumerNameToClientIdMapping = {
+  consumerName: string
+  entraClientId: string
 }

@@ -36,8 +36,10 @@ var resourcePrefix = '${platformSlug}-${substring(uniqueString(platformResourceG
 var vnetName = '${resourcePrefix}-vnet'
 var apimName = '${resourcePrefix}-apim'
 var aspName = '${resourcePrefix}-asp'
+var platformKeyVaultName = '${resourcePrefix}kv'
 var appInsightsName = '${resourcePrefix}-appi'
 var webappname = '${resourcePrefix}-pf-app'
+var aiCentralAppName = '${resourcePrefix}-aic-app'
 var acrName = replace('${resourcePrefix}-acr', '-', '')
 var logAnalyticsWorkspaceName = '${resourcePrefix}-logs'
 var deploymentIdentityName = '${resourcePrefix}-uami'
@@ -58,6 +60,17 @@ module network 'Foundation/networks.bicep' = {
   scope: rg
   params: {
     vnetName: vnetName
+  }
+}
+
+module platformKeyVault 'Foundation/kv.bicep' = {
+  name: '${deployment().name}-platformkv'
+  scope: rg
+  params: {
+    keyvaultName: platformKeyVaultName
+    kvDnsZoneId: network.outputs.kvPrivateDnsZoneId
+    peSubnetId: network.outputs.peSubnetId
+    location: location
   }
 }
 
@@ -138,6 +151,7 @@ module apimProductMappings 'Consumers/consumerDemands.bicep' = {
     mappedDemands: mappedDemands
     apiNames: azureOpenAIApis.outputs.aoaiApiNames
     environmentName: environmentName
+    platformKeyVaultName: platformKeyVaultName
   }
 }
 
@@ -170,8 +184,30 @@ module consumerPromptFlow './SamplePromptFlowApp/main.bicep' = {
     logAnalyticsId: monitoring.outputs.logAnalyticsId
     acrManagedIdentityName: consumerHostingPlatform.outputs.acrPullerManagedIdentityName
     apimName: apimName
-    apimUsername: 'consumer-1'
     kvDnsZoneId: network.outputs.kvPrivateDnsZoneId
     peSubnet: network.outputs.peSubnetId
   }
+}
+
+//AI Central could be part of the platform. It needs to know the mappings of consumer-names to their system assigned identities to support auto subscription mapping to APIm
+module aiCentral './AICentral/main.bicep' = {
+  name: '${deployment().name}-aiCentral'
+  scope: rg
+  params: {
+    location: location
+    appInsightsName: appInsightsName
+    aspId: consumerHostingPlatform.outputs.aspId
+    vnetIntegrationSubnetId: network.outputs.vnetIntegrationSubnetId
+    aiGatewayUri: apimFoundation.outputs.apimUri
+    aiCentralAppName: aiCentralAppName
+    consumerNameToAPImSubscriptionSecretMapping: apimProductMappings.outputs.consumerResources
+    platformKeyVaultName: platformKeyVault.outputs.kvName
+    consumerNameToClientIdMapping: [
+      {
+        consumerName: 'consumer-1'
+        entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
+      }
+    ]
+  }
+  dependsOn: [consumerPromptFlow]
 }

@@ -1,6 +1,5 @@
 param logAnalyticsId string
 param apimName string
-param apimUsername string
 param appInsightsName string
 param appServicePlanId string
 param acrName string
@@ -27,12 +26,6 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
   name: apimName
 }
 
-resource apimSubscription 'Microsoft.ApiManagement/service/subscriptions@2023-05-01-preview' existing = {
-  parent: apim
-  name: 'subscription-${apimUsername}'
-}
-
-//TODO add private endpoint
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   location: location
   name: replace('${webAppName}-kv', '-', '')
@@ -44,13 +37,6 @@ resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
     tenantId: subscription().tenantId
     enableRbacAuthorization: true
     publicNetworkAccess: 'disabled'
-  }
-  resource apimProductKey 'secrets' = {
-    name: 'apim-product-key'
-    properties: {
-      value: apimSubscription.listSecrets().primaryKey
-      contentType: 'text/plain'
-    }
   }
 }
 
@@ -178,3 +164,5 @@ resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' 
     ]
   }
 }
+
+output promptFlowIdentityPrincipalId string = webApp.identity.principalId
