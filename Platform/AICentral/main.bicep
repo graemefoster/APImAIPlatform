@@ -70,7 +70,7 @@ var allAppSettings = union(flatten(productToClientMappings), [
     value: '8080'
   }
   {
-    name: 'AICentral__LanguageEndpoint'
+    name: 'AICentral__ApimEndpointName'
     value: aiGatewayUri
   }
   {
