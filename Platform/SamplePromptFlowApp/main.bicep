@@ -111,7 +111,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
     siteConfig: {
       alwaysOn: true
       vnetRouteAllEnabled: true
-      linuxFxVersion: 'DOCKER|promptflows/consumer-1:0.6'
+      linuxFxVersion: 'DOCKER|promptflows/consumer-1:0.7'
       acrUseManagedIdentityCreds: true
       acrUserManagedIdentityID: uami.properties.clientId
       appCommandLine: 'bash start.sh'
@@ -121,16 +121,12 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           value: acr.properties.loginServer
         }
         {
-          name: 'APPINSIGHTS_CONNECTION_STRING'
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appi.properties.ConnectionString
         }
         {
           name: 'WEBSITES_PORT'
           value: '8080'
-        }
-        {
-          name: 'GRAEME_APIM_BACKED_API_KEY'
-          value: '@Microsoft.KeyVault(SecretUri=${kv.properties.vaultUri}/secrets/apim-product-key)'
         }
         {
           name: 'OPEN_AI_CONNECTION_BASE'
