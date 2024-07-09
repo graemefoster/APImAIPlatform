@@ -20,7 +20,7 @@
             var newId = "";
             var incomingDeploymentId = context.Request.MatchedParameters["deployment-id"];
 
-            {policy-pool-mapmap}
+            {policy-pool-map}
 
             return newId;
         }" />

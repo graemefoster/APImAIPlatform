@@ -79,7 +79,7 @@ resource appservice 'Microsoft.Web/serverfarms@2023-12-01' = {
   location: location
   name: appServicePlanName
   sku: {
-    name: 'P1v3'
+    name: 'P0v3'
     capacity: 1
   }
   properties: {
