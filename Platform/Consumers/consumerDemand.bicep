@@ -46,12 +46,12 @@ resource apimSubscription 'Microsoft.ApiManagement/service/subscriptions@2023-05
   properties: {
     scope: '/products/${apimProduct.name}'
     displayName: 'Subscription for ${mappedDemand.consumerName}'
-     state: 'active'
+    state: 'active'
   }
 }
 
 //These are not secrets - they just enable us to target policy for a consumer. The authentication / authorisation is done by a JWT.
-resource platformSubscriptionKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = { 
+resource platformSubscriptionKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   name: 'platformSubscriptionKey-${mappedDemand.consumerName}'
   parent: platformKeyVault
   properties: {
@@ -64,12 +64,15 @@ resource platformSubscriptionKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' 
 var requirementsString = join(
   map(
     mappedDemand.requirements,
-    r => 'dictionary["${r.outsideDeploymentName}"] = "${r.platformTeamDeploymentMapping}";'
+    r => 'if (incomingDeploymentId == "${r.outsideDeploymentName}") { newId = "${r.platformTeamDeploymentMapping}" } ";'
   ),
   '\n'
 )
 var poolMapString = join(
-  map(mappedDemand.requirements, r => 'dictionary["${r.outsideDeploymentName}"] = "${r.platformTeamPoolMapping}";'),
+  map(
+    mappedDemand.requirements,
+    r => 'if (incomingDeploymentId == "${r.outsideDeploymentName}") { newId = "${r.platformTeamPoolMapping}" } ";'
+  ),
   '\n'
 )
 

@@ -9,26 +9,20 @@
     <inbound>
         <base />
         <set-variable name="newDeploymentId" value="@{
-            var dictionary = new Dictionary<string, string>();
+            var newId = "";
+            var incomingDeploymentId = context.Request.MatchedParameters["deployment-id"];
 
             {policy-map}
 
-            var incomingDeploymentId = context.Request.MatchedParameters["deployment-id"];
-            if (dictionary.ContainsKey(incomingDeploymentId)) {
-                return dictionary[incomingDeploymentId];
-            }
-            return "";
+            return newId;
         }" />
         <set-variable name="newBackendPoolId" value="@{
-            var dictionary = new Dictionary<string, string>();
-
-            {policy-pool-map}
-
+            var newId = "";
             var incomingDeploymentId = context.Request.MatchedParameters["deployment-id"];
-            if (dictionary.ContainsKey(incomingDeploymentId)) {
-                return dictionary[incomingDeploymentId];
-            }
-            return "";
+
+            {policy-pool-mapmap}
+
+            return newId;
         }" />
 
         <choose>
