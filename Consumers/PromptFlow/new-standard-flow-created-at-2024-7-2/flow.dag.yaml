@@ -19,16 +19,9 @@ nodes:
     deployment_name: graeme-gpt-35-turbo-123
     max_tokens: 2000
     question: Write a Haiku about this.
-    item: ${hello_prompt.output}
-  connection: graeme_apim_backed
+    item: ${inputs.text}
+  connection: graeme-apim-backed
   api: chat
-- name: hello_prompt
-  type: prompt
-  source:
-    type: code
-    path: hello.jinja2
-  inputs:
-    text: ${inputs.text}
 - name: echo_my_prompt
   type: python
   source:

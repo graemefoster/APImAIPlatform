@@ -157,4 +157,10 @@ resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' 
   }
 }
 
-output promptFlowIdentityPrincipalId string = webApp.identity.principalId
+resource identity 'Microsoft.ManagedIdentity/identities@2023-07-31-preview' existing = {
+  scope: webApp
+  name: 'default'
+}
+
+
+output promptFlowIdentityPrincipalId string = identity.properties.clientId
