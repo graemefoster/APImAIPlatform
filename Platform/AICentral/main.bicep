@@ -9,6 +9,10 @@ param aiGatewayUri string
 param platformKeyVaultName string
 param consumerNameToAPImSubscriptionSecretMapping ConsumerNameToApimSubscriptionKey[]
 param consumerNameToClientIdMapping ConsumerNameToClientIdMapping[]
+param textAnalyticsUri string
+param cosmosConnectionStringSecretUri string
+param storageConectionStringSecretUri string
+param textAnalyticsSecretUri string
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
@@ -35,11 +39,14 @@ resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
-var productToClientMappings =  [
+var productToClientMappings = [
   for idx in range(0, length(consumerNameToAPImSubscriptionSecretMapping)): [
     {
       name: 'AICentral__ClaimsToKeys__${idx}__ClaimValue'
-      value: filter(consumerNameToClientIdMapping, item => item.consumerName == consumerNameToAPImSubscriptionSecretMapping[idx].consumerName)[0].entraClientId
+      value: filter(
+        consumerNameToClientIdMapping,
+        item => item.consumerName == consumerNameToAPImSubscriptionSecretMapping[idx].consumerName
+      )[0].entraClientId
     }
     {
       name: 'AICentral__ClaimsToKeys__${idx}__SubscriptionKey'
@@ -70,12 +77,32 @@ var allAppSettings = union(flatten(productToClientMappings), [
     value: '8080'
   }
   {
-    name: 'AICentral__ApimEndpointName'
+    name: 'AICentral__ApimEndpointUri'
     value: aiGatewayUri
   }
   {
     name: 'AICentral__TenantId'
     value: subscription().tenantId
+  }
+  {
+    name: 'AICentral__IncomingClaimName'
+    value: 'appid'
+  }
+  {
+    name: 'AICentral__TextAnalyticsEndpoint'
+    value: textAnalyticsUri
+  }
+  {
+    name: 'AICentral__StorageConnectionString'
+    value: '@Microsoft.KeyVault(SecretUri=${storageConectionStringSecretUri})'
+  }
+  {
+    name: 'AICentral__TextAnalyticsKey'
+    value: '@Microsoft.KeyVault(SecretUri=${textAnalyticsSecretUri})'
+  }
+  {
+    name: 'AICentral__CosmosConnectionString'
+    value: '@Microsoft.KeyVault(SecretUri=${cosmosConnectionStringSecretUri})'
   }
   {
     name: 'EnableAICentralSummaryWebPage'

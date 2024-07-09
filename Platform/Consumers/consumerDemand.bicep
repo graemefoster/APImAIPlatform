@@ -64,14 +64,14 @@ resource platformSubscriptionKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' 
 var requirementsString = join(
   map(
     mappedDemand.requirements,
-    r => 'if (incomingDeploymentId == "${r.outsideDeploymentName}") { newId = "${r.platformTeamDeploymentMapping}" };'
+    r => 'if (incomingDeploymentId == "${r.outsideDeploymentName}") { newId = "${r.platformTeamDeploymentMapping}"; }'
   ),
   '\n'
 )
 var poolMapString = join(
   map(
     mappedDemand.requirements,
-    r => 'if (incomingDeploymentId == "${r.outsideDeploymentName}") { newId = "${r.platformTeamPoolMapping}" };'
+    r => 'if (incomingDeploymentId == "${r.outsideDeploymentName}") { newId = "${r.platformTeamPoolMapping}"; }'
   ),
   '\n'
 )

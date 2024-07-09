@@ -41,6 +41,9 @@ var appInsightsName = '${resourcePrefix}-appi'
 var webappname = '${resourcePrefix}-pf-app'
 var aiCentralAppName = '${resourcePrefix}-aic-app'
 var acrName = replace('${resourcePrefix}-acr', '-', '')
+var storageName = replace('${resourcePrefix}-stg', '-', '')
+var cosmosName = replace('${resourcePrefix}-cosmos', '-', '')
+var textAnalyticsName = replace('${resourcePrefix}-textan', '-', '')
 var logAnalyticsWorkspaceName = '${resourcePrefix}-logs'
 var deploymentIdentityName = '${resourcePrefix}-uami'
 var acrPullIdentityName = '${resourcePrefix}-acrpuller-uami'
@@ -72,6 +75,42 @@ module platformKeyVault 'Foundation/kv.bicep' = {
     peSubnetId: network.outputs.peSubnetId
     location: location
   }
+}
+
+module storage 'Foundation/storage.bicep' = {
+  name: '${deployment().name}-storage'
+  scope: rg
+  params: {
+    kvName: platformKeyVault.outputs.kvName
+    peSubnetId: network.outputs.peSubnetId
+    queueDnsZoneId: network.outputs.storageQueuePrivateDnsZoneId
+    storageName: storageName
+    location: location
+  }  
+}
+
+module cosmos 'Audit/main.bicep' = {
+  name: '${deployment().name}-cosmos'
+  scope: rg
+  params: {
+    kvName: platformKeyVault.outputs.kvName
+    peSubnetId: network.outputs.peSubnetId
+    cosmosName: cosmosName
+    cosmosPrivateDnsZoneId: network.outputs.cosmosPrivateDnsZoneId
+    location: location
+  }  
+}
+
+module textAnalytics 'Audit/text-analytics.bicep' = {
+  name: '${deployment().name}-textAnalytics'
+  scope: rg
+  params: {
+    kvName: platformKeyVault.outputs.kvName
+    peSubnetId: network.outputs.peSubnetId
+    textAnalyticsName: textAnalyticsName
+    location: location
+    cogServicesPrivateDnsZoneId: network.outputs.cogServicesPrivateDnsZoneId
+  }  
 }
 
 module aoais 'AOAI/aoais.bicep' = {
@@ -208,6 +247,10 @@ module aiCentral './AICentral/main.bicep' = {
         entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
       }
     ]
+    textAnalyticsUri: textAnalytics.outputs.textAnalyticsUri
+    cosmosConnectionStringSecretUri: cosmos.outputs.cosmosConnectionStringSecretUri
+    storageConectionStringSecretUri: storage.outputs.storageConectionStringSecretUri
+    textAnalyticsSecretUri: textAnalytics.outputs.textAnalyticsSecretUri
   }
   dependsOn: [consumerPromptFlow]
 }

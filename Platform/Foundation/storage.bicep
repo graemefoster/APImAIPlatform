@@ -1,10 +1,16 @@
 param storageName string
 param queueDnsZoneId string
 param peSubnetId string
+param kvName string
+param location string = resourceGroup().location
+
+resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+  name:  kvName
+}
 
 resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: storageName
-  location: resourceGroup().location
+  location: location
   kind: 'StorageV2'
   sku: {
     name: 'Standard_LRS'
@@ -13,6 +19,15 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
     accessTier: 'Hot'
     allowBlobPublicAccess: false
     defaultToOAuthAuthentication: true
+  }
+}
+
+resource storageConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  name: 'logging-queue'
+  parent: kv
+  properties: {
+    contentType: 'text/plain'
+    value: storage.properties.primaryEndpoints.queue
   }
 }
 
@@ -53,3 +68,4 @@ resource queuePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = 
 
 
 output storageQueueConnectionString string = storage.properties.primaryEndpoints.queue
+output storageConectionStringSecretUri string = storageConnectionStringSecret.properties.secretUri

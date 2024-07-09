@@ -20,7 +20,7 @@ nodes:
     max_tokens: 2000
     question: Write a Haiku about this.
     item: ${inputs.text}
-  connection: graeme-apim-backed
+  connection: graeme_apim_backed
   api: chat
 - name: echo_my_prompt
   type: python
