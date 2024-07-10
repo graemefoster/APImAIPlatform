@@ -27,7 +27,7 @@ resource storageConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-0
   parent: kv
   properties: {
     contentType: 'text/plain'
-    value: storage.properties.primaryEndpoints.queue
+    value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${storage.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
   }
 }
 
