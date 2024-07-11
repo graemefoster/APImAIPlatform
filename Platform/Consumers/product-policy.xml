@@ -8,6 +8,20 @@
     <!-- Throttle, authorize, validate, cache, or transform the requests -->
     <inbound>
         <base />
+
+        <!-- authorise the caller. We know the expected id on the incoing jwt -->
+        <!-- Note we are authorising the Cog Services scope. Not great, but libraries like -->
+        <!-- Promptflow don't give us any chance to intercept the token -->
+        <!-- We could use AI Central to do a switch, but PromptFlow will hopefully improve this soon -->
+        <validate-azure-ad-token tenant-id="{{tenantId}}" header-name="Authorization">
+            <client-application-ids>
+                <application-id>{applicationId}</application-id>
+            </client-application-ids>
+            <audiences>
+                <audience>https://cognitiveservices.azure.com</audience>
+            </audiences>
+        </validate-azure-ad-token>
+
         <set-variable name="newDeploymentId" value="@{
             var newId = "";
             var incomingDeploymentId = context.Request.MatchedParameters["deployment-id"];

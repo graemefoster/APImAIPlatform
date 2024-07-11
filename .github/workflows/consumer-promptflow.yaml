@@ -34,7 +34,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }} 
 
       - name: Sign into ACR registry
-        run: az acr login --name aiplatcz7m4acr
+        run: az acr login --name aiplatdevtrphkacr
     
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -55,7 +55,7 @@ jobs:
       - name: Build Docker image
         working-directory: ./Consumers/PromptFlow/new-standard-flow-created-at-2024-7-2/
         run: |
-          docker build -t aiplatcz7m4acr.azurecr.io/promptflows/consumer-1:0.8 ./dist
+          docker build -t aiplatdevtrphkacr.azurecr.io/promptflows/consumer-1:0.8 ./dist
 
       - name: Push Promptflow Docker image to ACR
-        run: docker push aiplatcz7m4acr.azurecr.io/promptflows/consumer-1:0.8
+        run: docker push aiplatdevtrphkacr.azurecr.io/promptflows/consumer-1:0.8

@@ -1,13 +1,14 @@
 using './main.bicep'
 
 param location = 'australiaeast'
-param platformResourceGroup = 'aiplatform'
+param platformResourceGroup = 'aiplat'
 param platformSlug = 'aiplat'
 param apimPublisherEmail = 'graemefoster@microsoft.com'
 param apimPublisherName = 'Graeme Foster'
 param environmentName = 'dev'
 param ghRepo = 'aPImAIPlatform'
 param ghUsername = 'graemefoster'
+param tenantId = '16b3c013-d300-468d-ac64-7eda0820b6d3'
 
 param aoaiResources = [
   {

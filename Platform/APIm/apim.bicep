@@ -4,6 +4,7 @@ param apimName string
 param apimPublisherEmail string
 param apimPublisherName string
 param apimSubnetId string
+param tenantId string
 
 param appInsightsName string
 param logAnalyticsWorkspaceName string
@@ -28,6 +29,14 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' = {
       subnetResourceId: apimSubnetId
     }
     virtualNetworkType: 'External'
+  }
+
+  resource namedValue 'namedValues' = {
+    name: 'tenantId'
+    properties: {
+      displayName: 'tenantId'
+      value: tenantId
+    }
   }
 }
 

@@ -20,6 +20,7 @@ param apimPublisherName string
 param ghRepo string
 param ghUsername string
 param location string
+param tenantId string
 param aoaiPools AzureOpenAIResourcePool[]
 param deploymentRequirements DeploymentRequirement[]
 param mappedDemands MappedConsumerDemand[]
@@ -28,11 +29,11 @@ param aoaiResources AzureOpenAIResource[]
 param environmentName string = 'dev'
 
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
-  name: platformResourceGroup
+  name: '${platformResourceGroup}-${environmentName}'
   location: location
 }
 
-var resourcePrefix = '${platformSlug}-${substring(uniqueString(platformResourceGroup, platformSlug, deployment().name), 0, 5)}-'
+var resourcePrefix = '${platformSlug}-${environmentName}-${substring(uniqueString(platformResourceGroup, platformSlug, deployment().name), 0, 5)}'
 var vnetName = '${resourcePrefix}-vnet'
 var apimName = '${resourcePrefix}-apim'
 var aspName = '${resourcePrefix}-asp'
@@ -146,6 +147,7 @@ module apimFoundation 'APIm/apim.bicep' = {
     apimPublisherEmail: apimPublisherEmail
     apimPublisherName: apimPublisherName
     apimSubnetId: network.outputs.apimSubnetId
+    tenantId: tenantId
     location: location
   }
 }
@@ -179,19 +181,6 @@ module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
     ]
   }
   dependsOn: [azureOpenAIApimBackends]
-}
-
-module apimProductMappings 'Consumers/consumerDemands.bicep' = {
-  name: '${deployment().name}-consumerDemands'
-  scope: rg
-  params: {
-    apimName: apimFoundation.outputs.apimName
-    consumerDemands: consumerDemands
-    mappedDemands: mappedDemands
-    apiNames: azureOpenAIApis.outputs.aoaiApiNames
-    environmentName: environmentName
-    platformKeyVaultName: platformKeyVaultName
-  }
 }
 
 module consumerHostingPlatform './ConsumerOrchestratorHost/main.bicep' = {
@@ -228,6 +217,28 @@ module consumerPromptFlow './SamplePromptFlowApp/main.bicep' = {
   }
 }
 
+var consumerNameToClientIdMappings = [
+  {
+    consumerName: 'consumer-1'
+    entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
+  }
+]
+
+module apimProductMappings 'Consumers/consumerDemands.bicep' = {
+  name: '${deployment().name}-consumerDemands'
+  scope: rg
+  params: {
+    apimName: apimFoundation.outputs.apimName
+    consumerDemands: consumerDemands
+    mappedDemands: mappedDemands
+    apiNames: azureOpenAIApis.outputs.aoaiApiNames
+    environmentName: environmentName
+    platformKeyVaultName: platformKeyVaultName
+    consumerNameToClientIdMappings: consumerNameToClientIdMappings
+  }
+}
+
+
 //AI Central could be part of the platform. It needs to know the mappings of consumer-names to their system assigned identities to support auto subscription mapping to APIm
 module aiCentral './AICentral/main.bicep' = {
   name: '${deployment().name}-aiCentral'
@@ -241,12 +252,7 @@ module aiCentral './AICentral/main.bicep' = {
     aiCentralAppName: aiCentralAppName
     consumerNameToAPImSubscriptionSecretMapping: apimProductMappings.outputs.consumerResources
     platformKeyVaultName: platformKeyVault.outputs.kvName
-    consumerNameToClientIdMapping: [
-      {
-        consumerName: 'consumer-1'
-        entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
-      }
-    ]
+    consumerNameToClientIdMappings: consumerNameToClientIdMappings 
     textAnalyticsUri: textAnalytics.outputs.textAnalyticsUri
     cosmosConnectionStringSecretUri: cosmos.outputs.cosmosConnectionStringSecretUri
     storageConectionStringSecretUri: storage.outputs.storageConectionStringSecretUri

@@ -9,6 +9,7 @@ param mappedDemand MappedConsumerDemand
 param consumerDemand ConsumerDemand
 param environmentName string
 param platformKeyVaultName string
+param consumerAppId string
 param now string = utcNow('s')
 
 resource platformKeyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
@@ -19,7 +20,7 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
   name: apimName
 }
 
-resource apimProduct 'Microsoft.ApiManagement/service/products@2023-05-01-preview' = if(now <= consumerDemand.models[0].environments[environmentName].deployAt) {
+resource apimProduct 'Microsoft.ApiManagement/service/products@2023-05-01-preview' = if(consumerDemand.models[0].environments[environmentName].deployAt < now) {
   name: 'product-${mappedDemand.consumerName}'
   parent: apim
   properties: {
@@ -87,7 +88,8 @@ var tokenRateLimiting = join(
 )
 var policyXml = replace(loadTextContent('./product-policy.xml'), '{policy-map}', requirementsString)
 var policyXml2 = replace(policyXml, '{policy-pool-map}', poolMapString)
-var finalPolicyXml = replace(policyXml2, '{rate-limiting-section}', tokenRateLimiting)
+var policyXml3 = replace(policyXml2, '{applicationId}', consumerAppId)
+var finalPolicyXml = replace(policyXml3, '{rate-limiting-section}', tokenRateLimiting)
 
 resource productFragment 'Microsoft.ApiManagement/service/products/policies@2023-05-01-preview' = {
   parent: apimProduct

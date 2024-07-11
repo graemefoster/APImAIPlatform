@@ -8,7 +8,7 @@ param appInsightsName string
 param aiGatewayUri string
 param platformKeyVaultName string
 param consumerNameToAPImSubscriptionSecretMapping ConsumerNameToApimSubscriptionKey[]
-param consumerNameToClientIdMapping ConsumerNameToClientIdMapping[]
+param consumerNameToClientIdMappings ConsumerNameToClientIdMapping[]
 param textAnalyticsUri string
 param cosmosConnectionStringSecretUri string
 param storageConectionStringSecretUri string
@@ -44,7 +44,7 @@ var productToClientMappings = [
     {
       name: 'AICentral__ClaimsToKeys__${idx}__ClaimValue'
       value: filter(
-        consumerNameToClientIdMapping,
+        consumerNameToClientIdMappings,
         item => item.consumerName == consumerNameToAPImSubscriptionSecretMapping[idx].consumerName
       )[0].entraClientId
     }
