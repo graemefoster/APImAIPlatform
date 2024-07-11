@@ -108,6 +108,10 @@ var allAppSettings = union(flatten(productToClientMappings), [
     name: 'EnableAICentralSummaryWebPage'
     value: 'false'
   }
+  {
+    name: 'WEBSITE_HEALTHCHECK_MAXPINGFAILURES'
+    value: '10'
+  }
 ])
 
 resource aiCentral 'Microsoft.Web/sites@2023-12-01' = {
@@ -135,6 +139,7 @@ resource aiCentral 'Microsoft.Web/sites@2023-12-01' = {
       scmIpSecurityRestrictions: []
       linuxFxVersion: 'DOCKER|graemefoster/aicentral:0.18.1'
       appSettings: allAppSettings
+      healthCheckPath: '/health'
     }
   }
 }
