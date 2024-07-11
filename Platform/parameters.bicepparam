@@ -14,16 +14,33 @@ param aoaiResources = [
   {
     name: 'graemeopenai'
   }
+  {
+    name: 'graemeopenai2'
+  }
 ]
 
 param aoaiPools = [
   {
+    PoolName: 'graemeopenai-pool'
     AzureOpenAIResources: [
       {
-        name:'graemeopenai'
-        priority: 1}
+        name: 'graemeopenai'
+        priority: 1
+      }
     ]
-    PoolName: 'graemeopenai-pool'
+  }
+  {
+    PoolName: 'graemeopenai-embedding-pool'
+    AzureOpenAIResources: [
+      {
+        name: 'graemeopenai'
+        priority: 1
+      }
+      {
+        name: 'graemeopenai2'
+        priority: 1
+      }
+    ]
   }
 ]
 
@@ -36,7 +53,7 @@ param mappedDemands = [
       {
         id: 'embeddings-for-my-purpose'
         platformTeamDeploymentMapping: 'testdeploy'
-        platformTeamPoolMapping: 'graemeopenai-pool'
+        platformTeamPoolMapping: 'graemeopenai-embedding-pool'
         outsideDeploymentName: 'graeme-embedding-model-345' //This stays static meaning the Consumer never worries about deployment names changing
       }
       {
@@ -59,7 +76,7 @@ param deploymentRequirements = [
     isPTU: false
     model: 'text-embedding-ada-002'
     modelVersion: '2'
-    thousandsOfTokensPerMinute: 2
+    thousandsOfTokensPerMinute: 1
   }
   {
     aoaiName: 'graemeopenai'
@@ -69,6 +86,15 @@ param deploymentRequirements = [
     model: 'gpt-35-turbo'
     modelVersion: '0613'
     thousandsOfTokensPerMinute: 5
+  }
+  {
+    aoaiName: 'graemeopenai2'
+    deploymentName: 'testdeploy'
+    enableDynamicQuota: false
+    isPTU: false
+    model: 'text-embedding-ada-002'
+    modelVersion: '2'
+    thousandsOfTokensPerMinute: 1
   }
 ]
 
