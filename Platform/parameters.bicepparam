@@ -18,7 +18,11 @@ param aoaiResources = [
 
 param aoaiPools = [
   {
-    AzureOpenAIResourceNames: ['graemeopenai']
+    AzureOpenAIResources: [
+      {
+        name:'graemeopenai'
+        priority: 1}
+    ]
     PoolName: 'graemeopenai-pool'
   }
 ]

@@ -1,6 +1,6 @@
 targetScope = 'resourceGroup'
 
-import { AzureOpenAIResourcePool, AzureOpenAIBackend } from '../types.bicep'
+import { AzureOpenAIResourcePool, AzureOpenAIBackend, BackendPoolMember } from '../types.bicep'
 
 param backendServices AzureOpenAIBackend[]
 param pool AzureOpenAIResourcePool
@@ -19,8 +19,8 @@ resource backend 'Microsoft.ApiManagement/service/backends@2023-05-01-preview' =
     type: 'Pool'
     pool: {
       services: [
-        for aoaiName in pool.AzureOpenAIResourceNames: {
-          id: filter(backendServices, item => toLower(item.aoaiResourceName) == toLower(aoaiName))[0].backendId
+        for poolMember in pool.AzureOpenAIResources: {
+          id: filter(backendServices, item => toLower(item.aoaiResourceName) == toLower(poolMember.name))[0].backendId
         }
       ]
     }

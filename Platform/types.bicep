@@ -46,7 +46,7 @@ type AzureOpenAIBackend = {
 @export()
 type AzureOpenAIResourcePool = {
   PoolName: string
-  AzureOpenAIResourceNames: string[]
+  AzureOpenAIResources: BackendPoolMember[]
 }
 
 @export()
@@ -91,4 +91,10 @@ type ConsumerNameToApimSubscriptionKey = {
 type ConsumerNameToClientIdMapping = {
   consumerName: string
   entraClientId: string
+}
+
+@export()
+type BackendPoolMember = {
+  name: string
+  priority: int
 }

@@ -1,6 +1,6 @@
 targetScope = 'resourceGroup'
 
-import { AzureOpenAIResourceOutput, AzureOpenAIResource, AzureOpenAIResourcePool } from '../types.bicep'
+import { AzureOpenAIResourceOutput, AzureOpenAIResource, AzureOpenAIResourcePool, BackendPoolMember } from '../types.bicep'
 
 param aoaiResources AzureOpenAIResourceOutput[]
 param aoaiBackendPools AzureOpenAIResourcePool[]
@@ -37,9 +37,9 @@ module apimBackendPools 'aoaiBackendPool.bicep' = [
       apimName: apimName
       pool: {
         PoolName: aoaiBackendPools[index].PoolName
-        AzureOpenAIResourceNames: map(
-          aoaiBackendPools[index].AzureOpenAIResourceNames, 
-          resourceName => filter(aoaiResources, e => e.inputName == resourceName)[0].resourceName)
+        AzureOpenAIResources: map(
+          aoaiBackendPools[index].AzureOpenAIResources, 
+          resource => filter(aoaiResources, e => e.inputName == resource.name)[0])
       }
       backendServices:  [for index in range(0, length(aoaiBackendPools)): apimBackendsOnAoaiServices[index].outputs.backend]
     }
