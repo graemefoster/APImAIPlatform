@@ -30,6 +30,15 @@
 
             return newId;
         }" />
+
+        <choose>
+            <when condition="@(context.Variables["newDeploymentId"] == "")">
+                <return-response>
+                    <set-status code="404" reason="No such deployment" />
+                </return-response>
+            </when>
+        </choose>
+
         <set-variable name="newBackendPoolId" value="@{
             var newId = "";
             var incomingDeploymentId = context.Request.MatchedParameters["deployment-id"];
