@@ -47,6 +47,7 @@ resource backend 'Microsoft.ApiManagement/service/backends@2023-05-01-preview' =
 }
 
 output backend AzureOpenAIBackend = {
+  friendlyName: existingAoaiResource.inputName
   aoaiResourceName: existingAoaiResource.resourceName
   backendId: backend.id
 }

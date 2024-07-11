@@ -1,12 +1,9 @@
 targetScope = 'resourceGroup'
 
+import { DeploymentRequirement } from '../types.bicep'
+
 param aoaiName string
-param modelName string
-param deploymentName string
-param thousandsOfTokensPerMinute int
-param modelVersionName string
-param isPTU bool
-param enableDynamicQuota bool
+param aoaiDeployment DeploymentRequirement
 
 resource aoai 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' existing = {
   name: aoaiName
@@ -17,25 +14,25 @@ module resposibleAiPolicy 'aoai-rai-policy.bicep' = {
   name: '${deployment().name}-rai-policy'
   params: {
     openAiServiceName: aoai.name
-    policyName: '${deploymentName}-rai-policy'
+    policyName: '${aoaiDeployment.deploymentName}-rai-policy'
   }
 }
 
-resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
-  name: deploymentName
+resource aoaiDeploymentResource 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
+  name: aoaiDeployment.deploymentName
   parent: aoai
   sku: {
-    name: isPTU ? 'ProvisionedManaged' : 'Standard'
-    capacity: thousandsOfTokensPerMinute
+    name: aoaiDeployment.isPTU ? 'ProvisionedManaged' : 'Standard'
+    capacity: aoaiDeployment.thousandsOfTokensPerMinute
   }
   properties: {
     model: {
       format: 'OpenAI'
-      name: modelName
-      version: modelVersionName
+      name: aoaiDeployment.model
+      version: aoaiDeployment.modelVersion
     }
     versionUpgradeOption: 'OnceCurrentVersionExpired'
-    dynamicThrottlingEnabled: enableDynamicQuota
+    dynamicThrottlingEnabled: aoaiDeployment.enableDynamicQuota
     raiPolicyName: resposibleAiPolicy.outputs.responsibleAiPolicyName
   }
 }

@@ -5,18 +5,11 @@ param aoaiOutputs AzureOpenAIResourceOutput[]
 
 @batchSize(1)
 module aoaiDeployment './aoaideployment.bicep' = [
-  for deployment in deploymentRequirements: {
-    name: '${az.deployment().name}-${deployment.deploymentName}'
+  for idx in range(0, length(deploymentRequirements)): {
+    name: '${az.deployment().name}-${idx}'
     params: {
-      aoaiName: filter(
-        aoaiOutputs, 
-        aoai => aoai.inputName == deployment.aoaiName)[0].resourceName
-      deploymentName: deployment.deploymentName
-      enableDynamicQuota: deployment.enableDynamicQuota
-      isPTU: deployment.isPTU
-      modelName: deployment.model
-      modelVersionName: deployment.modelVersion
-      thousandsOfTokensPerMinute: deployment.thousandsOfTokensPerMinute
+      aoaiName: filter(aoaiOutputs, aoai => aoai.inputName == deploymentRequirements[idx].aoaiName)[0].resourceName
+      aoaiDeployment: deploymentRequirements[idx]
     }
   }
 ]

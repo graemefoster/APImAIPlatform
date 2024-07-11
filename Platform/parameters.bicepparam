@@ -27,6 +27,10 @@ param aoaiPools = [
         name: 'graemeopenai'
         priority: 1
       }
+      {
+        name: 'graemeopenai2'
+        priority: 2
+      }
     ]
   }
   {

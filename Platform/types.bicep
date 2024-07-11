@@ -39,6 +39,7 @@ type AzureOpenAIResourceOutput = {
 
 @export()
 type AzureOpenAIBackend = {
+  friendlyName: string
   aoaiResourceName: string
   backendId: string
 }

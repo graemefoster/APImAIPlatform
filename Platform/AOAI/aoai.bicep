@@ -55,7 +55,7 @@ resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' 
 }
 
 resource privateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' = {
-  name: 'openai-private-endpoint'
+  name: '${aoai.name}-pe'
   location: location
   properties: {
     subnet: {

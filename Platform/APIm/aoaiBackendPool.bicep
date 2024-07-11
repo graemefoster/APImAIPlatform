@@ -20,7 +20,7 @@ resource backend 'Microsoft.ApiManagement/service/backends@2023-05-01-preview' =
     pool: {
       services: [
         for poolMember in pool.AzureOpenAIResources: {
-          id: filter(backendServices, item => toLower(item.aoaiResourceName) == toLower(poolMember.name))[0].backendId
+          id: filter(backendServices, item => toLower(item.friendlyName) == toLower(poolMember.name))[0].backendId
           priority: poolMember.priority
           weight: 1
         }
