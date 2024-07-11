@@ -18,6 +18,9 @@ resource textAnalytics 'Microsoft.CognitiveServices/accounts@2024-04-01-preview'
   properties: {
     publicNetworkAccess: 'Disabled'
     customSubDomainName: textAnalyticsName
+    networkAcls: {
+      defaultAction: 'Deny'
+    }
   }
 }
 

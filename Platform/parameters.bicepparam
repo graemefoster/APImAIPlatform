@@ -78,9 +78,9 @@ param consumerDemands = [
         id: 'embeddings-for-my-purpose'
         modelName: 'gpt4o'
         environments: {
-          dev: { thousandsOfTokens: 1, deployAt: '02/jul/2024' }
-          test: { thousandsOfTokens: 1, deployAt: '02/jul/2024' }
-          prod: { thousandsOfTokens: 15, deployAt: '02/jul/2024' }
+          dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          test: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          prod: { thousandsOfTokens: 15, deployAt: '2024-07-02T00:00:0000' }
         }
         contentSafety: {
           prompt: {
@@ -95,9 +95,9 @@ param consumerDemands = [
         id: 'gpt35-for-my-purpose'
         modelName: 'gpt-35-turbo'
         environments: {
-          dev: { thousandsOfTokens: 1, deployAt: '02/jul/2024' }
-          test: { thousandsOfTokens: 1, deployAt: '02/jul/2024' }
-          prod: { thousandsOfTokens: 15, deployAt: '02/jul/2024' }
+          dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          test: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          prod: { thousandsOfTokens: 15, deployAt: '2024-07-02T00:00:0000' }
         }
         contentSafety: {
           prompt: {
