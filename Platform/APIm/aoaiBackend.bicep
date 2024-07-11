@@ -9,7 +9,7 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
   name: apimName
 }
 
-resource backend 'Microsoft.ApiManagement/service/backends@2022-08-01' = {
+resource backend 'Microsoft.ApiManagement/service/backends@2023-05-01-preview' = {
   name: existingAoaiResource.resourceName
   parent: apim
   properties: {
@@ -20,6 +20,28 @@ resource backend 'Microsoft.ApiManagement/service/backends@2022-08-01' = {
     tls: {
       validateCertificateChain: true
       validateCertificateName: true
+    }
+    circuitBreaker: {
+      rules: [
+        {
+          failureCondition: {
+            count: 3
+            errorReasons: [
+              'Server errors'
+            ]
+            interval: 'PT1M'
+            statusCodeRanges: [
+              {
+                min: 500
+                max: 599
+              }
+            ]
+          }
+          name: 'aoaiBreaker'
+          tripDuration: 'PT1M'
+          acceptRetryAfter: true
+        }
+      ]
     }
   }
 }
