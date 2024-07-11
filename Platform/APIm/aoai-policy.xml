@@ -1,11 +1,11 @@
 <policies>
     <inbound>
+        <base />
         <authentication-managed-identity resource="https://cognitiveservices.azure.com/" output-token-variable-name="managed-id-access-token" ignore-error="false" />
         <!-- set header manually to keep some Azure APIm policies happy that explicitly look for this -->
         <set-header name="Authorization" exists-action="override"> 
             <value>@("Bearer " + (string)context.Variables["managed-id-access-token"])</value> 
         </set-header> 
-        <base />
         <azure-openai-emit-token-metric>
             <dimension name="API ID" />
             <dimension name="Product ID" />
