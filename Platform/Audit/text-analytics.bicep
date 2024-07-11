@@ -20,7 +20,6 @@ resource textAnalytics 'Microsoft.CognitiveServices/accounts@2024-04-01-preview'
     customSubDomainName: textAnalyticsName
     networkAcls: {
       defaultAction: 'Deny'
-      bypass: 'AzureServices'
     }
   }
 }
