@@ -89,7 +89,7 @@ param deploymentRequirements = [
     isPTU: false
     model: 'gpt-35-turbo'
     modelVersion: '0613'
-    thousandsOfTokensPerMinute: 5
+    thousandsOfTokensPerMinute: 3
   }
   {
     aoaiName: 'graemeopenai2'
@@ -99,6 +99,15 @@ param deploymentRequirements = [
     model: 'text-embedding-ada-002'
     modelVersion: '2'
     thousandsOfTokensPerMinute: 1
+  }
+  {
+    aoaiName: 'graemeopenai2'
+    deploymentName: 'testdeploy2'
+    enableDynamicQuota: false
+    isPTU: false
+    model: 'gpt-35-turbo'
+    modelVersion: '0613'
+    thousandsOfTokensPerMinute: 2
   }
 ]
 
