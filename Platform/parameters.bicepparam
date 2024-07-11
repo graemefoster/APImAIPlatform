@@ -25,7 +25,7 @@ param aoaiPools = [
     AzureOpenAIResources: [
       {
         name: 'graemeopenai'
-        priority: 1
+        priority: 1 //low is higher priority
       }
       {
         name: 'graemeopenai2'
