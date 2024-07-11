@@ -9,6 +9,7 @@ param mappedDemand MappedConsumerDemand
 param consumerDemand ConsumerDemand
 param environmentName string
 param platformKeyVaultName string
+param now string = utcNow('s')
 
 resource platformKeyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: platformKeyVaultName
@@ -18,7 +19,7 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
   name: apimName
 }
 
-resource apimProduct 'Microsoft.ApiManagement/service/products@2023-05-01-preview' = {
+resource apimProduct 'Microsoft.ApiManagement/service/products@2023-05-01-preview' = if(now <= consumerDemand.models[0].environments[environmentName].deployAt) {
   name: 'product-${mappedDemand.consumerName}'
   parent: apim
   properties: {
