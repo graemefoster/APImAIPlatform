@@ -33,6 +33,11 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   location: location
 }
 
+resource consumerrg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
+  name: '${platformResourceGroup}-${environmentName}-consumer'
+  location: location
+}
+
 var resourcePrefix = '${platformSlug}-${environmentName}-${substring(uniqueString(platformResourceGroup, platformSlug, deployment().name), 0, 5)}'
 var vnetName = '${resourcePrefix}-vnet'
 var apimName = '${resourcePrefix}-apim'
@@ -198,32 +203,6 @@ module consumerHostingPlatform './ConsumerOrchestratorHost/main.bicep' = {
   }
 }
 
-//Simplification - this isn't technically part of the platform but we are going to deploy a web-app to assist our PromptFlow consumer
-module consumerPromptFlow '..//Consumers/PromptFlow/main.bicep' = {
-  name: '${deployment().name}-consumerPromptFlow'
-  scope: rg
-  params: {
-    acrName: consumerHostingPlatform.outputs.acrName
-    appInsightsName: monitoring.outputs.appInsightsName
-    appServicePlanId: consumerHostingPlatform.outputs.aspId
-    vnetIntegrationSubnet: network.outputs.vnetIntegrationSubnetId
-    webAppName: webappname
-    location: location
-    logAnalyticsId: monitoring.outputs.logAnalyticsId
-    acrManagedIdentityName: consumerHostingPlatform.outputs.acrPullerManagedIdentityName
-    aiCentralHostName: 'https://${aiCentralAppName}.azurewebsites.net'
-    kvDnsZoneId: network.outputs.kvPrivateDnsZoneId
-    peSubnet: network.outputs.peSubnetId
-    azureSearchPrivateDnsZoneId: network.outputs.azureSearchPrivateDnsZoneId
-  }
-}
-
-var consumerNameToClientIdMappings = [
-  {
-    consumerName: 'consumer-1'
-    entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
-  }
-]
 
 module apimProductMappings 'Consumers/consumerDemands.bicep' = {
   name: '${deployment().name}-consumerDemands'
@@ -253,8 +232,36 @@ module aiCentral './AICentral/main.bicep' = {
     appServiceDnsZoneId: network.outputs.appServicePrivateDnsZoneId
     peSubnetId: network.outputs.peSubnetId
   }
-  dependsOn: [consumerPromptFlow]
 }
+
+
+//Simplification - this isn't technically part of the platform but we are going to deploy a web-app to assist our PromptFlow consumer
+module consumerPromptFlow '..//Consumers/PromptFlow/main.bicep' = {
+  name: '${deployment().name}-consumerPromptFlow'
+  scope: consumerrg
+  params: {
+    acrName: consumerHostingPlatform.outputs.acrName
+    appInsightsName: monitoring.outputs.appInsightsName
+    appServicePlanId: consumerHostingPlatform.outputs.aspId
+    vnetIntegrationSubnet: network.outputs.vnetIntegrationSubnetId
+    webAppName: webappname
+    location: location
+    logAnalyticsId: monitoring.outputs.logAnalyticsId
+    acrManagedIdentityName: consumerHostingPlatform.outputs.acrPullerManagedIdentityName
+    aiCentralHostName: 'https://${aiCentralAppName}.azurewebsites.net'
+    kvDnsZoneId: network.outputs.kvPrivateDnsZoneId
+    peSubnet: network.outputs.peSubnetId
+    azureSearchPrivateDnsZoneId: network.outputs.azureSearchPrivateDnsZoneId
+    aiCentralResourceId: aiCentral.outputs.aiCentralResourceId
+  }
+}
+
+var consumerNameToClientIdMappings = [
+  {
+    consumerName: 'consumer-1'
+    entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
+  }
+]
 
 module aiCentralConfig './AICentral/config.bicep' = {
   name: '${deployment().name}-aiCentralConfig'
