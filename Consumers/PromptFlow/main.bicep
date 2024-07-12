@@ -11,17 +11,21 @@ param acrManagedIdentityName string
 param kvDnsZoneId string
 param azureSearchPrivateDnsZoneId string
 param aiCentralResourceId string
+param platformRg string
 
 resource uami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' existing = {
   name: acrManagedIdentityName
+  scope: resourceGroup(platformRg)
 }
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existing = {
   name: acrName
+  scope: resourceGroup(platformRg)
 }
 
 resource appi 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
+  scope: resourceGroup(platformRg)
 }
 
 resource consumerStorage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
@@ -103,19 +107,16 @@ resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
-resource azureSearch 'Microsoft.Search/searchServices@2024-06-01-preview' = {
+resource azureSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' = {
   name: '${webAppName}-search'
   location: location
   sku: {
-    name: 'standard2' //to support private indexers
+    name: 'basic'
   }
   identity: {
     type: 'SystemAssigned'
   }
   properties: {
-    authOptions: {
-      aadOrApiKey: {aadAuthFailureMode: 'http401WithBearerChallenge'}
-    }
     disableLocalAuth: true
     publicNetworkAccess: 'disabled'
     hostingMode: 'default'
@@ -135,7 +136,7 @@ resource azureSearch 'Microsoft.Search/searchServices@2024-06-01-preview' = {
   resource aiCentralEndpoint 'sharedPrivateLinkResources' = {
     name: 'aicentral'
     properties: {
-      groupId: 'site'
+      groupId: 'sites'
       requestMessage: 'Azure Search would like to access your AOAI resources via AI Central'
       privateLinkResourceId: aiCentralResourceId
       status: 'Approved'
@@ -205,7 +206,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   }
   properties: {
     serverFarmId: appServicePlanId
-    vnetImagePullEnabled: true
+    vnetImagePullEnabled: false
     virtualNetworkSubnetId: vnetIntegrationSubnet
     keyVaultReferenceIdentity: kvSecretsReaderIdentity.id
     siteConfig: {
