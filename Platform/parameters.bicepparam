@@ -80,7 +80,7 @@ param deploymentRequirements = [
     isPTU: false
     model: 'text-embedding-ada-002'
     modelVersion: '2'
-    thousandsOfTokensPerMinute: 1
+    thousandsOfTokensPerMinute: 5
   }
   {
     aoaiName: 'graemeopenai'
@@ -89,7 +89,7 @@ param deploymentRequirements = [
     isPTU: false
     model: 'gpt-35-turbo'
     modelVersion: '0613'
-    thousandsOfTokensPerMinute: 3
+    thousandsOfTokensPerMinute: 5
   }
   {
     aoaiName: 'graemeopenai2'
@@ -98,7 +98,7 @@ param deploymentRequirements = [
     isPTU: false
     model: 'text-embedding-ada-002'
     modelVersion: '2'
-    thousandsOfTokensPerMinute: 1
+    thousandsOfTokensPerMinute: 5
   }
   {
     aoaiName: 'graemeopenai2'
@@ -107,7 +107,7 @@ param deploymentRequirements = [
     isPTU: false
     model: 'gpt-35-turbo'
     modelVersion: '0613'
-    thousandsOfTokensPerMinute: 2
+    thousandsOfTokensPerMinute: 5
   }
 ]
 

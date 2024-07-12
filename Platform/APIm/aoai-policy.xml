@@ -3,9 +3,9 @@
         <base />
         <authentication-managed-identity resource="https://cognitiveservices.azure.com/" output-token-variable-name="managed-id-access-token" ignore-error="false" />
         <!-- set header manually to keep some Azure APIm policies happy that explicitly look for this -->
-        <set-header name="Authorization" exists-action="override"> 
-            <value>@("Bearer " + (string)context.Variables["managed-id-access-token"])</value> 
-        </set-header> 
+        <set-header name="Authorization" exists-action="override">
+            <value>@("Bearer " + (string)context.Variables["managed-id-access-token"])</value>
+        </set-header>
         <azure-openai-emit-token-metric>
             <dimension name="API ID" />
             <dimension name="Product ID" />
@@ -13,7 +13,13 @@
         </azure-openai-emit-token-metric>
     </inbound>
     <backend>
-        <base />
+
+        <!-- retry over the backend pools - if we get 429's or 500's from a downstream we don't want to return that to the consumer unless we have no choice -->
+        <retry condition="@((context.Response.StatusCode >= 500 && context.Response.StatusCode < 599) || context.Response.StatusCode == 429)" 
+            count="@(context.Variables["backendPoolSize"])" interval="0" max-interval="100" delta="10" first-fast-retry="true">
+            <forward-request buffer-request-body="true" buffer-response="false" />
+        </retry>
+
     </backend>
     <outbound>
         <base />

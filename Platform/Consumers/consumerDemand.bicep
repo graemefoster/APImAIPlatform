@@ -77,6 +77,13 @@ var poolMapString = join(
   ),
   '\n'
 )
+var poolMapSizeString = join(
+  map(
+    mappedDemand.requirements,
+    r => 'if (incomingDeploymentId == "${r.outsideDeploymentName}") { poolSize = ${length(apiNames)}; }'
+  ),
+  '\n'
+)
 
 var tokenRateLimiting = join(
   map(
@@ -89,7 +96,8 @@ var tokenRateLimiting = join(
 var policyXml = replace(loadTextContent('./product-policy.xml'), '{policy-map}', requirementsString)
 var policyXml2 = replace(policyXml, '{policy-pool-map}', poolMapString)
 var policyXml3 = replace(policyXml2, '{applicationId}', consumerAppId)
-var finalPolicyXml = replace(policyXml3, '{rate-limiting-section}', tokenRateLimiting)
+var policyXml4 = replace(policyXml3, '{policy-pool-size-map}', poolMapSizeString)
+var finalPolicyXml = replace(policyXml4, '{rate-limiting-section}', tokenRateLimiting)
 
 resource productFragment 'Microsoft.ApiManagement/service/products/policies@2023-05-01-preview' = {
   parent: apimProduct

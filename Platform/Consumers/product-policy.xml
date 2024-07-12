@@ -48,6 +48,15 @@
             return newId;
         }" />
 
+        <set-variable name="backendPoolSize" value="@{
+            var newId = "";
+            var incomingDeploymentId = context.Request.MatchedParameters["deployment-id"];
+
+            {policy-pool-size-map}
+
+            return newId;
+        }" />
+
         <choose>
         {rate-limiting-section}
         </choose>
