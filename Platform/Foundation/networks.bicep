@@ -240,6 +240,38 @@ resource cogServicesPrivateDnsZoneId 'Microsoft.Network/privateDnsZones@2020-06-
   }
 }
 
+resource cogSearchPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.search.windows.net'
+  location: 'global'
+
+  resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
+    name: 'privatelink.search.windows.net-link'
+    location: 'global'
+    properties: {
+      registrationEnabled: false
+      virtualNetwork: {
+        id: vnet.id
+      }
+    }
+  }
+}
+
+resource appServicePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.azurewebsites.net'
+  location: 'global'
+
+  resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
+    name: 'privatelink.azurewebsites.net-link'
+    location: 'global'
+    properties: {
+      registrationEnabled: false
+      virtualNetwork: {
+        id: vnet.id
+      }
+    }
+  }
+}
+
 output vnetId string = vnet.id
 output apimSubnetId string = apimSubnet.id
 output peSubnetId string = peSubnet.id
@@ -249,3 +281,6 @@ output kvPrivateDnsZoneId string = kvPrivateDnsZone.id
 output storageQueuePrivateDnsZoneId string = storageQueuePrivateDnsZone.id
 output cosmosPrivateDnsZoneId string = cosmosPrivateDnsZone.id
 output cogServicesPrivateDnsZoneId string = cogServicesPrivateDnsZoneId.id
+output azureSearchPrivateDnsZoneId string = cosmosPrivateDnsZone.id
+output appServicePrivateDnsZoneId string = appServicePrivateDnsZone.id
+

@@ -199,7 +199,7 @@ module consumerHostingPlatform './ConsumerOrchestratorHost/main.bicep' = {
 }
 
 //Simplification - this isn't technically part of the platform but we are going to deploy a web-app to assist our PromptFlow consumer
-module consumerPromptFlow './SamplePromptFlowApp/main.bicep' = {
+module consumerPromptFlow '..//Consumers/PromptFlow/main.bicep' = {
   name: '${deployment().name}-consumerPromptFlow'
   scope: rg
   params: {
@@ -214,6 +214,7 @@ module consumerPromptFlow './SamplePromptFlowApp/main.bicep' = {
     aiCentralHostName: 'https://${aiCentralAppName}.azurewebsites.net'
     kvDnsZoneId: network.outputs.kvPrivateDnsZoneId
     peSubnet: network.outputs.peSubnetId
+    azureSearchPrivateDnsZoneId: network.outputs.azureSearchPrivateDnsZoneId
   }
 }
 
@@ -245,11 +246,24 @@ module aiCentral './AICentral/main.bicep' = {
   scope: rg
   params: {
     location: location
-    appInsightsName: appInsightsName
     aspId: consumerHostingPlatform.outputs.aspId
     vnetIntegrationSubnetId: network.outputs.vnetIntegrationSubnetId
-    aiGatewayUri: apimFoundation.outputs.apimUri
     aiCentralAppName: aiCentralAppName
+    platformKeyVaultName: platformKeyVault.outputs.kvName
+    appServiceDnsZoneId: network.outputs.appServicePrivateDnsZoneId
+    peSubnetId: network.outputs.peSubnetId
+  }
+  dependsOn: [consumerPromptFlow]
+}
+
+module aiCentralConfig './AICentral/config.bicep' = {
+  name: '${deployment().name}-aiCentralConfig'
+  scope: rg
+  params: {
+    aiCentralAppName: aiCentralAppName
+    location: location
+    appInsightsName: appInsightsName
+    aiGatewayUri: apimFoundation.outputs.apimUri
     consumerNameToAPImSubscriptionSecretMapping: apimProductMappings.outputs.consumerResources
     platformKeyVaultName: platformKeyVault.outputs.kvName
     consumerNameToClientIdMappings: consumerNameToClientIdMappings 
@@ -258,5 +272,5 @@ module aiCentral './AICentral/main.bicep' = {
     storageConectionStringSecretUri: storage.outputs.storageConectionStringSecretUri
     textAnalyticsSecretUri: textAnalytics.outputs.textAnalyticsSecretUri
   }
-  dependsOn: [consumerPromptFlow]
+  dependsOn: [aiCentral]
 }
