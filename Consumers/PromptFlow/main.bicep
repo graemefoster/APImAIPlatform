@@ -106,6 +106,9 @@ resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
 resource azureSearch 'Microsoft.Search/searchServices@2024-06-01-preview' = {
   name: '${webAppName}-search'
   location: location
+  sku: {
+    name: 'standard2' //to support private indexers
+  }
   identity: {
     type: 'SystemAssigned'
   }

@@ -281,3 +281,5 @@ module aiCentralConfig './AICentral/config.bicep' = {
   }
   dependsOn: [aiCentral]
 }
+
+output GITHUB_ACR_PULL_CLIENT_ID string = consumerHostingPlatform.outputs.ghActionsClientId
