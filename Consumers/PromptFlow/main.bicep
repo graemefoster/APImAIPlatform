@@ -119,7 +119,7 @@ resource azureSearch 'Microsoft.Search/searchServices@2024-06-01-preview' = {
     disableLocalAuth: true
     publicNetworkAccess: 'disabled'
     hostingMode: 'default'
-    semanticSearch: 'free'
+    semanticSearch: 'standard'
   }
 
   resource storageEndpoint 'sharedPrivateLinkResources' = {
