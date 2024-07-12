@@ -52,8 +52,8 @@ resource aiCentral 'Microsoft.Web/sites@2023-12-01' = {
       vnetRouteAllEnabled: true
       ipSecurityRestrictions: []
       scmIpSecurityRestrictions: []
-      linuxFxVersion: 'DOCKER|graemefoster/aicentral:0.18.1'
-      healthCheckPath: '/health'
+      linuxFxVersion: 'DOCKER|graemefoster/aicentral:0.18.3'
+      healthCheckPath: '/healthz'
     }
   }
 }
