@@ -110,6 +110,10 @@ var allAppSettings = union(flatten(productToClientMappings), [
     name: 'WEBSITE_HEALTHCHECK_MAXPINGFAILURES'
     value: '10'
   }
+  {
+    name: 'ASPNETCORE_FORWARDEDHEADERS_ENABLED'
+    value: 'true'
+  }
 ])
 
 var realAppSettings = reduce(allAppSettings, {}, (acc, setting) => union(acc, { '${setting.name}': setting.value }))
