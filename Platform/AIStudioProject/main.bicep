@@ -7,6 +7,7 @@ param storageName string
 param acrName string
 param azopenaiName string
 param aiStudioProjectName string
+param logAnalyticsId string
 
 resource azOpenAI 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' existing = {
   name: azopenaiName
@@ -82,6 +83,21 @@ resource uamiRoleAssignmentAcrPull 'Microsoft.Authorization/roleAssignments@2022
   }
 }
 
+resource aiStudioNetworkApprover 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: 'b556d68e-0be0-4f35-a333-ad7ee1ce17ea'
+}
+
+
+resource uamiRoleAssignmentNetworkApprover 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiStudioManagedIdentity.name}-networkapprover-${resourceGroup().name}')
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: aiStudioNetworkApprover.id
+    principalId: aiStudioManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource uamiRoleAssignmentAcrPush 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${aiStudioManagedIdentity.name}-acrpush-${acr.name}')
   scope: acr
@@ -147,5 +163,26 @@ resource aoaiStudioProject 'Microsoft.MachineLearningServices/workspaces@2024-04
     friendlyName: aiStudioProjectName
     hubResourceId: aiStudioHub.id
     publicNetworkAccess: 'Enabled'
+  }
+}
+
+
+resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: aiStudioHub
+  name: 'diagnostics'
+  properties: {
+    workspaceId: logAnalyticsId
+    logs: [
+      {
+        categoryGroup: 'AllLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
   }
 }

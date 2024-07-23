@@ -155,6 +155,7 @@ module aiStudio 'AIStudioProject/main.bicep' = {
     acrName: aiStudioAcrName
     azopenaiName: aoais.outputs.aoaiResources[0].resourceName
     aiStudioProjectName: 'aiopsaccelerator'
+    logAnalyticsId: monitoring.outputs.logAnalyticsId
   }
 
 }
