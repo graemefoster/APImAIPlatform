@@ -47,6 +47,7 @@ var appInsightsName = '${resourcePrefix}-appi'
 var webappname = '${resourcePrefix}-pf-app'
 var aiCentralAppName = '${resourcePrefix}-aic-app'
 var acrName = replace('${resourcePrefix}-acr', '-', '')
+var aiStudioAcrName = replace('${resourcePrefix}-aistudioacr', '-', '')
 var storageName = replace('${resourcePrefix}-stg', '-', '')
 var cosmosName = replace('${resourcePrefix}-cosmos', '-', '')
 var textAnalyticsName = replace('${resourcePrefix}-textan', '-', '')
@@ -140,6 +141,22 @@ module azureOpenAiDeployments 'AOAI/aoaideployments.bicep' = {
     aoaiOutputs: aoais.outputs.aoaiResources
   }
   dependsOn: [aoais]
+}
+
+//try deploy an AI Studio hub / project
+module aiStudio 'AIStudioProject/main.bicep' = {
+  name: '${deployment().name}-aiStudio'
+  scope: rg
+  params: {
+    location: location
+    aiStudioHubName: '${resourcePrefix}-aihub'
+    keyVaultName: platformKeyVault.outputs.kvName
+    storageName: storage.outputs.storageName
+    acrName: aiStudioAcrName
+    azopenaiName: aoais.outputs.aoaiResources[0].resourceName
+    aiStudioProjectName: 'aiopsaccelerator'
+  }
+
 }
 
 module apimFoundation 'APIm/apim.bicep' = {
