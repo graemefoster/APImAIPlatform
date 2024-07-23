@@ -112,7 +112,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     primaryUserAssignedIdentity: aiStudioManagedIdentity.id
     publicNetworkAccess: 'Enabled'
     managedNetwork: {
-      isolationMode: 'AllowOnlyApprovedOutbound'
+      isolationMode: 'AllowInternetOutbound'
     }
   }
 
