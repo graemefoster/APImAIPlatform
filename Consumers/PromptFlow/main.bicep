@@ -141,6 +141,7 @@ resource azureSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' = {
       privateLinkResourceId: aiCentralResourceId
       status: 'Approved'
     }
+     dependsOn: [storageEndpoint] //doesn't like multiple updates at once
   }
 }
 
@@ -284,3 +285,4 @@ resource identity 'Microsoft.ManagedIdentity/identities@2023-07-31-preview' exis
 }
 
 output promptFlowIdentityPrincipalId string = identity.properties.clientId
+output aiSearchName string = azureSearch.name

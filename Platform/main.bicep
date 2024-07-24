@@ -143,24 +143,6 @@ module azureOpenAiDeployments 'AOAI/aoaideployments.bicep' = {
   dependsOn: [aoais]
 }
 
-//try deploy an AI Studio hub / project
-module aiStudio 'AIStudioProject/main.bicep' = {
-  name: '${deployment().name}-aiStudio'
-  scope: rg
-  params: {
-    location: location
-    aiStudioHubName: '${resourcePrefix}-aishub'
-    keyVaultName: platformKeyVault.outputs.kvName
-    storageName: storage.outputs.storageName
-    acrName: aiStudioAcrName
-    azopenaiName: aoais.outputs.aoaiResources[0].resourceName
-    aiStudioProjectName: '${resourcePrefix}-aisprj3'
-    logAnalyticsId: monitoring.outputs.logAnalyticsId
-    aiCentralName: aiCentral.outputs.name
-  }
-
-}
-
 module apimFoundation 'APIm/apim.bicep' = {
   name: '${deployment().name}-apim'
   scope: rg
@@ -255,7 +237,7 @@ module aiCentral './AICentral/main.bicep' = {
 
 
 //Simplification - this isn't technically part of the platform but we are going to deploy a web-app to assist our PromptFlow consumer
-module consumerPromptFlow '..//Consumers/PromptFlow/main.bicep' = {
+module consumerPromptFlow '../Consumers/PromptFlow/main.bicep' = {
   name: '${deployment().name}-consumerPromptFlow'
   scope: consumerrg
   params: {
@@ -304,6 +286,24 @@ module aiCentralConfig './AICentral/config.bicep' = {
     textAnalyticsSecretUri: textAnalytics.outputs.textAnalyticsSecretUri
   }
   dependsOn: [aiCentral]
+}
+
+//try deploy an AI Studio hub / project
+module aiStudio 'AIStudioProject/main.bicep' = {
+  name: '${deployment().name}-aiStudio'
+  scope: rg
+  params: {
+    location: location
+    aiStudioHubName: '${resourcePrefix}-aishub'
+    keyVaultName: platformKeyVault.outputs.kvName
+    storageName: storage.outputs.storageName
+    acrName: aiStudioAcrName
+    azopenaiName: aoais.outputs.aoaiResources[0].resourceName
+    aiStudioProjectName: '${resourcePrefix}-aisprj3'
+    logAnalyticsId: monitoring.outputs.logAnalyticsId
+    aiCentralName: aiCentral.outputs.name
+    aiSearchName: consumerPromptFlow.outputs.aiSearchName
+  }
 }
 
 output GITHUB_ACR_PULL_CLIENT_ID string = consumerHostingPlatform.outputs.ghActionsClientId

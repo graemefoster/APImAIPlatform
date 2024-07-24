@@ -168,7 +168,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
   resource aiSearchConnection 'connections@2024-04-01' = {
     name: 'storageConnection'
     properties: {
-      category: 'AIServices'
+      category: 'CognitiveSearch'
       target: 'https://${aiSearch.name}.search.windows.net'
       authType: 'AAD'
       isSharedToAll: true
@@ -177,6 +177,9 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
         ResourceId: aiSearch.id
       }
     }
+    dependsOn: [
+      aiServicesConnection
+    ]
   }
 }
 
