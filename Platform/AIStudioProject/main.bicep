@@ -9,6 +9,11 @@ param azopenaiName string
 param aiStudioProjectName string
 param logAnalyticsId string
 param aiCentralName string
+param aiSearchName string
+
+resource aiSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' existing = {
+  name: aiSearchName
+}
 
 resource aiCentral 'Microsoft.Web/sites@2023-12-01' existing = {
   name: aiCentralName
@@ -156,6 +161,20 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
       metadata: {
         ApiType: 'Azure'
         ResourceId: azOpenAI.id
+      }
+    }
+  }
+
+  resource aiSearchConnection 'connections@2024-04-01' = {
+    name: 'storageConnection'
+    properties: {
+      category: 'AIServices'
+      target: 'https://${aiSearch.name}.search.windows.net'
+      authType: 'AAD'
+      isSharedToAll: true
+      metadata: {
+        ApiType: 'Azure'
+        ResourceId: aiSearch.id
       }
     }
   }
