@@ -109,6 +109,24 @@ param deploymentRequirements = [
     modelVersion: '0613'
     thousandsOfTokensPerMinute: 5
   }
+  {
+    aoaiName: 'graemeopenai'
+    deploymentName: 'text-embedding-ada-002'
+    enableDynamicQuota: false
+    isPTU: false
+    model: 'text-embedding-ada-002'
+    modelVersion: '2'
+    thousandsOfTokensPerMinute: 2
+  }
+  {
+    aoaiName: 'graemeopenai2'
+    deploymentName: 'text-embedding-ada-002'
+    enableDynamicQuota: false
+    isPTU: false
+    model: 'text-embedding-ada-002'
+    modelVersion: '2'
+    thousandsOfTokensPerMinute: 2
+  }
 ]
 
 param consumerDemands = [

@@ -303,6 +303,7 @@ module aiStudio 'AIStudioProject/main.bicep' = {
     logAnalyticsId: monitoring.outputs.logAnalyticsId
     aiCentralName: aiCentral.outputs.name
     aiSearchName: consumerPromptFlow.outputs.aiSearchName
+    aiSearchRg: consumerrg.name
   }
 }
 

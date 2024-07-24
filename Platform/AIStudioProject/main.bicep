@@ -4,16 +4,17 @@ param location string
 param aiStudioHubName string
 param keyVaultName string
 param storageName string
-param applicationStorageName string
 param acrName string
 param azopenaiName string
 param aiStudioProjectName string
 param logAnalyticsId string
 param aiCentralName string
+param aiSearchRg string
 param aiSearchName string
 
 resource aiSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' existing = {
   name: aiSearchName
+  scope: resourceGroup(aiSearchRg)
 }
 
 resource aiCentral 'Microsoft.Web/sites@2023-12-01' existing = {
@@ -43,8 +44,9 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storageName
 }
 
+var aiStudioManagedIdentityName = '${aiStudioHubName}-uami'
 resource aiStudioManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
-  name: '${aiStudioHubName}-uami'
+  name: aiStudioManagedIdentityName
   location: location
 }
 
@@ -94,34 +96,6 @@ resource uamiRoleAssignmentAcrPull 'Microsoft.Authorization/roleAssignments@2022
   }
 }
 
-resource contributor 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
-  name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-}
-
-resource aiSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-contributor-${aiSearch.name}')
-  scope: aiSearch
-  properties: {
-    roleDefinitionId: contributor.id
-    principalId: aiStudioManagedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource searchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
-  name: '8ebe5a00-799e-43f5-93ac-243d3dce84a7'
-}
-
-resource aiSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-indexContributor-${aiSearch.name}')
-  scope: aiSearch
-  properties: {
-    roleDefinitionId: searchIndexContributor.id
-    principalId: aiStudioManagedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
 resource aiStudioNetworkApprover 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: 'b556d68e-0be0-4f35-a333-ad7ee1ce17ea'
 }
@@ -143,6 +117,17 @@ resource uamiRoleAssignmentAcrPush 'Microsoft.Authorization/roleAssignments@2022
     roleDefinitionId: acrPushRole.id
     principalId: aiStudioManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
+  }
+}
+
+//TODO - work out RG alignment. Not sure AI Studio should be in the platform RG. Maybe need for a third.
+module aiSearchRbac 'aistudio-consumer-rbac.bicep' = {
+  name: '${deployment().name}-aiSearchRbac'
+  scope: resourceGroup(aiSearchRg)
+  params: {
+    aiSearchName: aiSearchName
+    aiStudioManagedIdentityName: aiStudioManagedIdentityName
+    aiStudioManagedIdentityRg: resourceGroup().name
   }
 }
 
