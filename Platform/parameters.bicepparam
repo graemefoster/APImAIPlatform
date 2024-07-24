@@ -56,15 +56,15 @@ param mappedDemands = [
     requirements: [
       {
         id: 'embeddings-for-my-purpose'
-        platformTeamDeploymentMapping: 'text-embedding-ada-002'
+        platformTeamDeploymentMapping: 'testdeploy'
         platformTeamPoolMapping: 'graemeopenai-embedding-pool'
-        outsideDeploymentName: 'text-embedding-ada-002' //This stays static meaning the Consumer never worries about deployment names changing
+        outsideDeploymentName: 'graeme-embedding-model-345' //This stays static meaning the Consumer never worries about deployment names changing
       }
       {
         id: 'gpt35-for-my-purpose'
         platformTeamDeploymentMapping: 'testdeploy2'
         platformTeamPoolMapping: 'graemeopenai-pool'
-        outsideDeploymentName: 'testdeploy2'
+        outsideDeploymentName: 'graeme-gpt-35-turbo-123'
       }
     ]
   }
@@ -75,7 +75,7 @@ param mappedDemands = [
 param deploymentRequirements = [
   {
     aoaiName: 'graemeopenai'
-    deploymentName: 'text-embedding-ada-002'
+    deploymentName: 'testdeploy'
     enableDynamicQuota: false
     isPTU: false
     model: 'text-embedding-ada-002'
@@ -93,7 +93,7 @@ param deploymentRequirements = [
   }
   {
     aoaiName: 'graemeopenai2'
-    deploymentName: 'text-embedding-ada-002'
+    deploymentName: 'testdeploy'
     enableDynamicQuota: false
     isPTU: false
     model: 'text-embedding-ada-002'

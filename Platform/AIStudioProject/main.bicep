@@ -131,6 +131,21 @@ module aiSearchRbac 'aistudio-consumer-rbac.bicep' = {
   }
 }
 
+//Allow AI Studio to PUT an embeddings model - it needs this to perform indexing
+resource contributor 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+}
+
+resource aoaiContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiStudioManagedIdentity.name}-contributor-${azOpenAI.name}')
+  scope: azOpenAI
+  properties: {
+    roleDefinitionId: contributor.id
+    principalId: aiStudioManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
   name: aiStudioHubName
   location: resourceGroup().location
@@ -161,6 +176,15 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
             subresourceTarget: 'sites'
           }
         }
+        //From what I can see, adding a AI Search connection doesn't auto create a private endpoint to AI Search. In contrast to adding an AOAI connection.
+        aiSearch: {
+          type: 'PrivateEndpoint'
+          category: 'UserDefined'
+          destination: {
+            serviceResourceId: aiSearch.id
+            subresourceTarget: 'searchService'
+          }
+        }
       }
     }
   }
@@ -169,7 +193,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     name: 'aiServicesConnection'
     properties: {
       category: 'AzureOpenAI'
-      target: 'https://${aiCentral.properties.defaultHostName}' //needs deployment names exposed via AI Central to match ones in AOAI
+      target: azOpenAI.properties.endpoint // APIm doesn't support an Ingestion endpoint which AI Studio uses to index content...  'https://${aiCentral.properties.defaultHostName}' //needs deployment names exposed via AI Central to match ones in AOAI
       authType: 'AAD'
       isSharedToAll: true
       metadata: {
@@ -198,7 +222,6 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
 }
 
 // struggle to recreate this. 
-
 resource aoaiStudioProject 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
   name: aiStudioProjectName
   location: resourceGroup().location

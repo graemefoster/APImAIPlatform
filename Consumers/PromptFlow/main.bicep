@@ -118,31 +118,40 @@ resource azureSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' = {
   }
   properties: {
     disableLocalAuth: true
+    networkRuleSet: {
+      bypass: 'AzureServices' //Allow Azure Open AI Ingestion endpoint to callback to AI Search to index embedded items.
+      ipRules: []
+    }
+    disabledDataExfiltrationOptions: [
+      'All'
+    ]
     publicNetworkAccess: 'disabled'
     hostingMode: 'default'
     semanticSearch: 'standard'
   }
 
-  resource storageEndpoint 'sharedPrivateLinkResources' = {
-    name: 'storage'
-    properties: {
-      groupId: 'blob'
-      requestMessage: 'Azure Search would like to access your storage account'
-      privateLinkResourceId: consumerStorage.id
-      status: 'Approved'
-    }
-  }
+  // these force a dependency on higher SKU levels if I want to use in skillsets
 
-  resource aiCentralEndpoint 'sharedPrivateLinkResources' = {
-    name: 'aicentral'
-    properties: {
-      groupId: 'sites'
-      requestMessage: 'Azure Search would like to access your AOAI resources via AI Central'
-      privateLinkResourceId: aiCentralResourceId
-      status: 'Approved'
-    }
-     dependsOn: [storageEndpoint] //doesn't like multiple updates at once
-  }
+  // resource storageEndpoint 'sharedPrivateLinkResources' = {
+  //   name: 'storage'
+  //   properties: {
+  //     groupId: 'blob'
+  //     requestMessage: 'Azure Search would like to access your storage account'
+  //     privateLinkResourceId: consumerStorage.id
+  //     status: 'Approved'
+  //   }
+  // }
+
+  // resource aiCentralEndpoint 'sharedPrivateLinkResources' = {
+  //   name: 'aicentral'
+  //   properties: {
+  //     groupId: 'sites'
+  //     requestMessage: 'Azure Search would like to access your AOAI resources via AI Central'
+  //     privateLinkResourceId: aiCentralResourceId
+  //     status: 'Approved'
+  //   }
+  //    dependsOn: [storageEndpoint] //doesn't like multiple updates at once
+  // }
 }
 
 //read access on the blobs for indexing (over a private endpoint)
