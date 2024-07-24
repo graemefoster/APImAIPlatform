@@ -169,7 +169,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     name: 'aiServicesConnection'
     properties: {
       category: 'AzureOpenAI'
-      target: azOpenAI.properties.endpoint //'https://${aiCentral.properties.defaultHostName}' - needs model names to match ones in AOAI
+      target: 'https://${aiCentral.properties.defaultHostName}' //needs deployment names exposed via AI Central to match ones in AOAI
       authType: 'AAD'
       isSharedToAll: true
       metadata: {
