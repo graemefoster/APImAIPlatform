@@ -194,7 +194,11 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     properties: {
       category: 'AzureOpenAI'
       target: azOpenAI.properties.endpoint // APIm doesn't support an Ingestion endpoint which AI Studio uses to index content...  'https://${aiCentral.properties.defaultHostName}' //needs deployment names exposed via AI Central to match ones in AOAI
-      authType: 'AAD'
+      authType: 'ApiKey'
+      credentials: {
+        key: azOpenAI.listKeys().key1 // Entra doesn't seem to work with the Lookup step. Have raised a bug on Github for this.
+
+      }
       isSharedToAll: true
       metadata: {
         ApiType: 'Azure'
@@ -208,8 +212,11 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     properties: {
       category: 'CognitiveSearch'
       target: 'https://${aiSearch.name}.search.windows.net'
-      authType: 'AAD'
+      authType: 'ApiKey'
       isSharedToAll: true
+      credentials: {
+        key: aiSearch.listAdminKeys().primaryKey //If we use AAD we need to ensure the AI Search resource allows AI Studio users access to create indexes and add data to them
+      }
       metadata: {
         ApiType: 'Azure'
         ResourceId: aiSearch.id

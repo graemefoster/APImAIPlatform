@@ -117,7 +117,7 @@ resource azureSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' = {
     type: 'SystemAssigned'
   }
   properties: {
-    disableLocalAuth: true
+    disableLocalAuth: false //struggling to make AI Studio work using RBAC. Unsure what Identity it's using to do things.
     networkRuleSet: {
       bypass: 'AzureServices' //Allow Azure Open AI Ingestion endpoint to callback to AI Search to index embedded items.
       ipRules: []
