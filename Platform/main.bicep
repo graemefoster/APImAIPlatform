@@ -149,13 +149,14 @@ module aiStudio 'AIStudioProject/main.bicep' = {
   scope: rg
   params: {
     location: location
-    aiStudioHubName: '${resourcePrefix}-aihub'
+    aiStudioHubName: '${resourcePrefix}-aishub'
     keyVaultName: platformKeyVault.outputs.kvName
     storageName: storage.outputs.storageName
     acrName: aiStudioAcrName
     azopenaiName: aoais.outputs.aoaiResources[0].resourceName
-    aiStudioProjectName: 'aiopsaccelerator'
+    aiStudioProjectName: '${resourcePrefix}-aisprj3'
     logAnalyticsId: monitoring.outputs.logAnalyticsId
+    aiCentralName: aiCentral.outputs.name
   }
 
 }
@@ -279,6 +280,10 @@ var consumerNameToClientIdMappings = [
   {
     consumerName: 'consumer-1'
     entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
+  }
+  {
+    consumerName: 'ai-studio'
+    entraClientId: '18a66f5f-dbdf-4c17-9dd7-1634712a9cbe' //machine learning services app-id. **WARNING** Maybe different in each tenant..
   }
 ]
 

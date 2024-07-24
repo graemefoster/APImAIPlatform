@@ -8,6 +8,11 @@ param acrName string
 param azopenaiName string
 param aiStudioProjectName string
 param logAnalyticsId string
+param aiCentralName string
+
+resource aiCentral 'Microsoft.Web/sites@2023-12-01' existing = {
+  name: aiCentralName
+}
 
 resource azOpenAI 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' existing = {
   name: azopenaiName
@@ -33,7 +38,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
 }
 
 resource aiStudioManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
-  name: '${aiStudioProjectName}-uami'
+  name: '${aiStudioHubName}-uami'
   location: location
 }
 
@@ -87,7 +92,6 @@ resource aiStudioNetworkApprover 'Microsoft.Authorization/roleDefinitions@2022-0
   name: 'b556d68e-0be0-4f35-a333-ad7ee1ce17ea'
 }
 
-
 resource uamiRoleAssignmentNetworkApprover 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${aiStudioManagedIdentity.name}-networkapprover-${resourceGroup().name}')
   scope: resourceGroup()
@@ -129,6 +133,16 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     publicNetworkAccess: 'Enabled'
     managedNetwork: {
       isolationMode: 'AllowInternetOutbound'
+      outboundRules: {
+        sampleapi: {
+          type: 'PrivateEndpoint'
+          category: 'UserDefined'
+          destination: {
+            serviceResourceId: aiCentral.id
+            subresourceTarget: 'sites'
+          }
+        }
+      }
     }
   }
 
@@ -136,12 +150,9 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     name: 'aiServicesConnection'
     properties: {
       category: 'AzureOpenAI'
-      target: azOpenAI.properties.endpoints['OpenAI Language Model Instance API']
-      authType: 'ApiKey'
+      target: 'https://${aiCentral.properties.defaultHostName}'
+      authType: 'AAD'
       isSharedToAll: true
-      credentials: {
-        key: azOpenAI.listKeys().key1
-      }
       metadata: {
         ApiType: 'Azure'
         ResourceId: azOpenAI.id
@@ -149,6 +160,8 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     }
   }
 }
+
+// struggle to recreate this. 
 
 resource aoaiStudioProject 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
   name: aiStudioProjectName
@@ -158,14 +171,11 @@ resource aoaiStudioProject 'Microsoft.MachineLearningServices/workspaces@2024-04
     type: 'SystemAssigned'
   }
   properties: {
-    allowPublicAccessWhenBehindVnet: true
     description: 'AI Studio project for the AI Ops Accelerator'
     friendlyName: aiStudioProjectName
     hubResourceId: aiStudioHub.id
-    publicNetworkAccess: 'Enabled'
   }
 }
-
 
 resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: aiStudioHub
