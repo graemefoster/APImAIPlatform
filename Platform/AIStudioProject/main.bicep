@@ -4,6 +4,7 @@ param location string
 param aiStudioHubName string
 param keyVaultName string
 param storageName string
+param applicationStorageName string
 param acrName string
 param azopenaiName string
 param aiStudioProjectName string
@@ -93,6 +94,34 @@ resource uamiRoleAssignmentAcrPull 'Microsoft.Authorization/roleAssignments@2022
   }
 }
 
+resource contributor 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+}
+
+resource aiSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiStudioManagedIdentity.name}-contributor-${aiSearch.name}')
+  scope: aiSearch
+  properties: {
+    roleDefinitionId: contributor.id
+    principalId: aiStudioManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource searchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: '8ebe5a00-799e-43f5-93ac-243d3dce84a7'
+}
+
+resource aiSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiStudioManagedIdentity.name}-indexContributor-${aiSearch.name}')
+  scope: aiSearch
+  properties: {
+    roleDefinitionId: searchIndexContributor.id
+    principalId: aiStudioManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource aiStudioNetworkApprover 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: 'b556d68e-0be0-4f35-a333-ad7ee1ce17ea'
 }
@@ -155,7 +184,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     name: 'aiServicesConnection'
     properties: {
       category: 'AzureOpenAI'
-      target: 'https://${aiCentral.properties.defaultHostName}'
+      target: azOpenAI.properties.endpoint //'https://${aiCentral.properties.defaultHostName}' - needs model names to match ones in AOAI
       authType: 'AAD'
       isSharedToAll: true
       metadata: {
@@ -166,7 +195,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
   }
 
   resource aiSearchConnection 'connections@2024-04-01' = {
-    name: 'storageConnection'
+    name: 'storageConnection' //TODO rename to aiSearchConnection
     properties: {
       category: 'CognitiveSearch'
       target: 'https://${aiSearch.name}.search.windows.net'
