@@ -40,7 +40,7 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
           id: 'aoaiLogContainer'
           partitionKey: {
             paths: [
-              '/id'
+              '/LogId'
             ]
             kind: 'Hash'
           }

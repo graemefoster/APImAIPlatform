@@ -253,6 +253,7 @@ module consumerPromptFlow '..//Consumers/PromptFlow/main.bicep' = {
     peSubnet: network.outputs.peSubnetId
     azureSearchPrivateDnsZoneId: network.outputs.azureSearchPrivateDnsZoneId
     aiCentralResourceId: aiCentral.outputs.aiCentralResourceId
+    platformRg: rg.name
   }
 }
 
@@ -281,3 +282,5 @@ module aiCentralConfig './AICentral/config.bicep' = {
   }
   dependsOn: [aiCentral]
 }
+
+output GITHUB_ACR_PULL_CLIENT_ID string = consumerHostingPlatform.outputs.ghActionsClientId
