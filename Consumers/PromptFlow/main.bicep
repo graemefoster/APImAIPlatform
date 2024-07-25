@@ -154,6 +154,27 @@ resource azureSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' = {
   // }
 }
 
+
+resource searchDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: azureSearch
+  name: 'diagnostics'
+  properties: {
+    workspaceId: logAnalyticsId
+    logs: [
+      {
+        categoryGroup: 'AllLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
+
 //read access on the blobs for indexing (over a private endpoint)
 resource storageReader 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'

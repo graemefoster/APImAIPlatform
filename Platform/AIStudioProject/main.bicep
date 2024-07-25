@@ -14,6 +14,7 @@ param logAnalyticsId string
 param aiCentralName string
 param aiSearchRg string
 param aiSearchName string
+param azureAiStudioUsersGroupObjectId string
 
 resource aiSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' existing = {
   name: aiSearchName
@@ -149,6 +150,22 @@ resource aoaiContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
+//AI Studio uses the /ingestion endpoint which isn't covered in Cog Svc users. This is performed as the AI Studio user
+resource aoaiContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: 'a001fd3d-188f-4b5d-821b-7da978bf7442'
+}
+
+
+resource aoaiContributorRoleForAIStudioGroup 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${azureAiStudioUsersGroupObjectId}-aoaiContributor-${azOpenAI.name}')
+  scope: azOpenAI
+  properties: {
+    roleDefinitionId: aoaiContributorRole.id
+    principalId: azureAiStudioUsersGroupObjectId
+    principalType: 'Group'
+  }
+}
+
 //when I try create compute I am told I need Contributor on the ACR, and the KV
 resource kvContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${aiStudioManagedIdentity.name}-contributor-${kv.name}')
@@ -170,6 +187,7 @@ resource acrContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
+//for the AI Studio users to be able to create indexes
 
 
 resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {

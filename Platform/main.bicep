@@ -28,6 +28,9 @@ param consumerDemands ConsumerDemand[]
 param aoaiResources AzureOpenAIResource[]
 param environmentName string = 'dev'
 
+//we grant some additional permissions to this group to enable AI Studio to work
+param azureAiStudioUsersGroupObjectId string
+
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: '${platformResourceGroup}-${environmentName}'
   location: location
@@ -182,7 +185,7 @@ module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
       }
       {
         //used by PromptFlow as of July 2024
-        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-07-01-preview.json'
+        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/feature/ai-studio/Platform/AOAI/openapi/aoai-2023-07-01-preview.json'
         version: '2023-07-01-preview'
       }
       {
@@ -309,6 +312,7 @@ module aiStudio 'AIStudioProject/main.bicep' = {
     aiCentralName: aiCentral.outputs.name
     aiSearchName: consumerPromptFlow.outputs.aiSearchName
     aiSearchRg: consumerrg.name
+    azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
   }
 }
 
