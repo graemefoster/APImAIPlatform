@@ -69,3 +69,4 @@ resource queuePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = 
 
 output storageQueueConnectionString string = storage.properties.primaryEndpoints.queue
 output storageConectionStringSecretUri string = storageConnectionStringSecret.properties.secretUri
+output storageName string = storage.name

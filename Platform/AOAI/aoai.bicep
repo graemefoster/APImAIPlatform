@@ -23,12 +23,12 @@ resource aoai 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
   }
   properties: {
     publicNetworkAccess: 'Disabled'
-    disableLocalAuth: true
+    disableLocalAuth: false //for ai studio
     networkAcls: {
       defaultAction: 'Deny'
       ipRules: []
       virtualNetworkRules: []
-      bypass: 'None'
+      bypass: 'AzureServices' //let AI Search use this...
     }
     customSubDomainName: aoaiResourceName
   }
@@ -67,7 +67,7 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' = {
         properties: {
           privateLinkServiceId: aoai.id
           groupIds: [
-            'account'
+              'account'
           ]
         }
       }

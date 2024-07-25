@@ -45,11 +45,6 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
             kind: 'Hash'
           }
         }
-        options: {
-          autoscaleSettings: {
-            maxThroughput: 4000
-          }
-        }
       }
     }
   }

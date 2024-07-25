@@ -13,7 +13,10 @@ resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
     }
     tenantId: subscription().tenantId
     enableRbacAuthorization: true
-    publicNetworkAccess: 'disabled'
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+    }
   }
 }
 
@@ -49,7 +52,6 @@ resource kvpe 'Microsoft.Network/privateEndpoints@2023-11-01' = {
         }
       ]
     }
-  
   }
 }
 

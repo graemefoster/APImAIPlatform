@@ -10,7 +10,7 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
   name: apimName
 }
 
-resource backend 'Microsoft.ApiManagement/service/backends@2023-05-01-preview' = {
+resource backend 'Microsoft.ApiManagement/service/backends@2023-09-01-preview' = {
   name: pool.PoolName
   parent: apim
   properties: {

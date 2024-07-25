@@ -47,6 +47,7 @@ var appInsightsName = '${resourcePrefix}-appi'
 var webappname = '${resourcePrefix}-pf-app'
 var aiCentralAppName = '${resourcePrefix}-aic-app'
 var acrName = replace('${resourcePrefix}-acr', '-', '')
+var aiStudioAcrName = replace('${resourcePrefix}-aistudioacr', '-', '')
 var storageName = replace('${resourcePrefix}-stg', '-', '')
 var cosmosName = replace('${resourcePrefix}-cosmos', '-', '')
 var textAnalyticsName = replace('${resourcePrefix}-textan', '-', '')
@@ -180,6 +181,11 @@ module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
         version: '2022-12-01'
       }
       {
+        //used by PromptFlow as of July 2024
+        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-07-01-preview.json'
+        version: '2023-07-01-preview'
+      }
+      {
         apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-24-04-01-preview.json'
         version: '2024-04-01-preview'
       }
@@ -236,7 +242,7 @@ module aiCentral './AICentral/main.bicep' = {
 
 
 //Simplification - this isn't technically part of the platform but we are going to deploy a web-app to assist our PromptFlow consumer
-module consumerPromptFlow '..//Consumers/PromptFlow/main.bicep' = {
+module consumerPromptFlow '../Consumers/PromptFlow/main.bicep' = {
   name: '${deployment().name}-consumerPromptFlow'
   scope: consumerrg
   params: {
@@ -262,6 +268,10 @@ var consumerNameToClientIdMappings = [
     consumerName: 'consumer-1'
     entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
   }
+  {
+    consumerName: 'aistudio'
+    entraClientId: '18a66f5f-dbdf-4c17-9dd7-1634712a9cbe' //machine learning services app-id. **WARNING** Maybe different in each tenant..
+  }
 ]
 
 module aiCentralConfig './AICentral/config.bicep' = {
@@ -281,6 +291,25 @@ module aiCentralConfig './AICentral/config.bicep' = {
     textAnalyticsSecretUri: textAnalytics.outputs.textAnalyticsSecretUri
   }
   dependsOn: [aiCentral]
+}
+
+//try deploy an AI Studio hub / project
+module aiStudio 'AIStudioProject/main.bicep' = {
+  name: '${deployment().name}-aiStudio'
+  scope: rg
+  params: {
+    location: location
+    aiStudioHubName: '${resourcePrefix}-aishub'
+    keyVaultName: platformKeyVault.outputs.kvName
+    storageName: storage.outputs.storageName
+    acrName: aiStudioAcrName
+    azopenaiName: aoais.outputs.aoaiResources[0].resourceName
+    aiStudioProjectName: '${resourcePrefix}-aisprj3'
+    logAnalyticsId: monitoring.outputs.logAnalyticsId
+    aiCentralName: aiCentral.outputs.name
+    aiSearchName: consumerPromptFlow.outputs.aiSearchName
+    aiSearchRg: consumerrg.name
+  }
 }
 
 output GITHUB_ACR_PULL_CLIENT_ID string = consumerHostingPlatform.outputs.ghActionsClientId

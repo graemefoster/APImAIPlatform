@@ -1,8 +1,8 @@
 using './main.bicep'
 
-param location = 'eastus2'
-param platformResourceGroup = 'aiplat2'
-param platformSlug = 'aiplat2'
+param location = 'australiaeast'
+param platformResourceGroup = 'aiplat3'
+param platformSlug = 'aiplat3'
 param apimPublisherEmail = 'graemefoster@microsoft.com'
 param apimPublisherName = 'Graeme Foster'
 param environmentName = 'dev'
@@ -50,21 +50,39 @@ param aoaiPools = [
 
 //These are the consumer requests
 //-------------------------------
+// I've used the same inside / outside names for now to support my AI Studio test work
 param mappedDemands = [
   {
     consumerName: 'consumer-1'
     requirements: [
       {
         id: 'embeddings-for-my-purpose'
-        platformTeamDeploymentMapping: 'testdeploy'
+        platformTeamDeploymentMapping: 'text-embedding-ada-002'
         platformTeamPoolMapping: 'graemeopenai-embedding-pool'
-        outsideDeploymentName: 'graeme-embedding-model-345' //This stays static meaning the Consumer never worries about deployment names changing
+        outsideDeploymentName: 'embeddings' //This stays static meaning the Consumer never worries about deployment names changing
       }
       {
         id: 'gpt35-for-my-purpose'
         platformTeamDeploymentMapping: 'testdeploy2'
         platformTeamPoolMapping: 'graemeopenai-pool'
-        outsideDeploymentName: 'graeme-gpt-35-turbo-123'
+        outsideDeploymentName: 'gpt35'
+      }
+    ]
+  }
+  {
+    consumerName: 'aistudio'
+    requirements: [
+      {
+        id: 'aistudioembeddings'
+        platformTeamDeploymentMapping: 'text-embedding-ada-002'
+        platformTeamPoolMapping: 'graemeopenai-embedding-pool'
+        outsideDeploymentName: 'text-embedding-ada-002' //This stays static meaning the Consumer never worries about deployment names changing
+      }
+      {
+        id: 'aistudiogpt35'
+        platformTeamDeploymentMapping: 'testdeploy2'
+        platformTeamPoolMapping: 'graemeopenai-pool'
+        outsideDeploymentName: 'testdeploy2'
       }
     ]
   }
@@ -75,39 +93,39 @@ param mappedDemands = [
 param deploymentRequirements = [
   {
     aoaiName: 'graemeopenai'
-    deploymentName: 'testdeploy'
+    deploymentName: 'testdeploy2'
     enableDynamicQuota: false
     isPTU: false
-    model: 'text-embedding-ada-002'
-    modelVersion: '2'
+    model: 'gpt-35-turbo'
+    modelVersion: '0613'
+    thousandsOfTokensPerMinute: 5
+  }
+  {
+    aoaiName: 'graemeopenai2'
+    deploymentName: 'testdeploy2'
+    enableDynamicQuota: false
+    isPTU: false
+    model: 'gpt-35-turbo'
+    modelVersion: '0613'
     thousandsOfTokensPerMinute: 5
   }
   {
     aoaiName: 'graemeopenai'
-    deploymentName: 'testdeploy2'
-    enableDynamicQuota: false
-    isPTU: false
-    model: 'gpt-35-turbo'
-    modelVersion: '0613'
-    thousandsOfTokensPerMinute: 5
-  }
-  {
-    aoaiName: 'graemeopenai2'
-    deploymentName: 'testdeploy'
+    deploymentName: 'text-embedding-ada-002'
     enableDynamicQuota: false
     isPTU: false
     model: 'text-embedding-ada-002'
     modelVersion: '2'
-    thousandsOfTokensPerMinute: 5
+    thousandsOfTokensPerMinute: 2
   }
   {
     aoaiName: 'graemeopenai2'
-    deploymentName: 'testdeploy2'
+    deploymentName: 'text-embedding-ada-002'
     enableDynamicQuota: false
     isPTU: false
-    model: 'gpt-35-turbo'
-    modelVersion: '0613'
-    thousandsOfTokensPerMinute: 5
+    model: 'text-embedding-ada-002'
+    modelVersion: '2'
+    thousandsOfTokensPerMinute: 2
   }
 ]
 
@@ -120,7 +138,7 @@ param consumerDemands = [
     models: [
       {
         id: 'embeddings-for-my-purpose'
-        modelName: 'gpt4o'
+        modelName: 'text-embedding-ada-002'
         environments: {
           dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
           test: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
@@ -137,6 +155,48 @@ param consumerDemands = [
       }
       {
         id: 'gpt35-for-my-purpose'
+        modelName: 'gpt-35-turbo'
+        environments: {
+          dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          test: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          prod: { thousandsOfTokens: 15, deployAt: '2024-07-02T00:00:0000' }
+        }
+        contentSafety: {
+          prompt: {
+            abuse: 'high'
+          }
+          response: {
+            abuse: 'High'
+          }
+        }
+      }
+    ]
+  }
+  {
+    consumerName: 'aistudio'
+    requestName: 'aistudio-requirements'
+    contactEmail: 'engineer.name@myorg.com'
+    costCentre: '123433'
+    models: [
+      {
+        id: 'aistudioembeddings'
+        modelName: 'text-embedding-ada-002'
+        environments: {
+          dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          test: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          prod: { thousandsOfTokens: 15, deployAt: '2024-07-02T00:00:0000' }
+        }
+        contentSafety: {
+          prompt: {
+            abuse: 'high'
+          }
+          response: {
+            abuse: 'High'
+          }
+        }
+      }
+      {
+        id: 'aistudiogpt35'
         modelName: 'gpt-35-turbo'
         environments: {
           dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
