@@ -185,7 +185,7 @@ module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
       }
       {
         //used by PromptFlow as of July 2024
-        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/feature/ai-studio/Platform/AOAI/openapi/aoai-2023-07-01-preview.json'
+        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-07-01-preview.json'
         version: '2023-07-01-preview'
       }
       {

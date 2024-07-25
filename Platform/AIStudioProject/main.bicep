@@ -236,7 +236,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     properties: {
       category: 'AzureOpenAI'
       target: 'https://${aiCentral.properties.defaultHostName}' //  azOpenAI.properties.endpoint //needs deployment names exposed via AI Central to match ones in AOAI
-      authType: 'AAD'
+      authType: 'AAD' //Works apart from the Index Lookup task. This as of July 2024 fails with AAD credent
       isSharedToAll: true
       metadata: {
         ApiType: 'Azure'
