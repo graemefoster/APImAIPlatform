@@ -59,10 +59,27 @@ param mappedDemands = [
         id: 'embeddings-for-my-purpose'
         platformTeamDeploymentMapping: 'text-embedding-ada-002'
         platformTeamPoolMapping: 'graemeopenai-embedding-pool'
-        outsideDeploymentName: 'text-embedding-ada-002' //This stays static meaning the Consumer never worries about deployment names changing
+        outsideDeploymentName: 'embeddings' //This stays static meaning the Consumer never worries about deployment names changing
       }
       {
         id: 'gpt35-for-my-purpose'
+        platformTeamDeploymentMapping: 'testdeploy2'
+        platformTeamPoolMapping: 'graemeopenai-pool'
+        outsideDeploymentName: 'gpt35'
+      }
+    ]
+  }
+  {
+    consumerName: 'aistudio'
+    requirements: [
+      {
+        id: 'aistudioembeddings'
+        platformTeamDeploymentMapping: 'text-embedding-ada-002'
+        platformTeamPoolMapping: 'graemeopenai-embedding-pool'
+        outsideDeploymentName: 'text-embedding-ada-002' //This stays static meaning the Consumer never worries about deployment names changing
+      }
+      {
+        id: 'aistudiogpt35'
         platformTeamDeploymentMapping: 'testdeploy2'
         platformTeamPoolMapping: 'graemeopenai-pool'
         outsideDeploymentName: 'testdeploy2'
@@ -121,7 +138,7 @@ param consumerDemands = [
     models: [
       {
         id: 'embeddings-for-my-purpose'
-        modelName: 'gpt4o'
+        modelName: 'text-embedding-ada-002'
         environments: {
           dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
           test: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
@@ -155,4 +172,45 @@ param consumerDemands = [
       }
     ]
   }
-]
+  {
+    consumerName: 'aistudio'
+    requestName: 'aistudio-requirements'
+    contactEmail: 'engineer.name@myorg.com'
+    costCentre: '123433'
+    models: [
+      {
+        id: 'embeddings'
+        modelName: 'text-embedding-ada-002'
+        environments: {
+          dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          test: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          prod: { thousandsOfTokens: 15, deployAt: '2024-07-02T00:00:0000' }
+        }
+        contentSafety: {
+          prompt: {
+            abuse: 'high'
+          }
+          response: {
+            abuse: 'High'
+          }
+        }
+      }
+      {
+        id: 'gpt35'
+        modelName: 'gpt-35-turbo'
+        environments: {
+          dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          test: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
+          prod: { thousandsOfTokens: 15, deployAt: '2024-07-02T00:00:0000' }
+        }
+        contentSafety: {
+          prompt: {
+            abuse: 'high'
+          }
+          response: {
+            abuse: 'High'
+          }
+        }
+      }
+    ]
+  }]

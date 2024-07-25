@@ -264,7 +264,7 @@ var consumerNameToClientIdMappings = [
     entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
   }
   {
-    consumerName: 'ai-studio'
+    consumerName: 'consumer-1'
     entraClientId: '18a66f5f-dbdf-4c17-9dd7-1634712a9cbe' //machine learning services app-id. **WARNING** Maybe different in each tenant..
   }
 ]
