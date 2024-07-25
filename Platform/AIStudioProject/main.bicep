@@ -197,10 +197,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     properties: {
       category: 'AzureOpenAI'
       target: 'https://${aiCentral.properties.defaultHostName}' //  azOpenAI.properties.endpoint //needs deployment names exposed via AI Central to match ones in AOAI
-      authType: 'ManagedIdentity'
-      // credentials: {
-      //   key: azOpenAI.listKeys().key1 // Entra doesn't seem to work with the Lookup step. Have raised a bug on Github for this.
-      // }
+      authType: 'AAD'
       isSharedToAll: true
       metadata: {
         ApiType: 'Azure'
@@ -210,15 +207,12 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
   }
 
   resource aiSearchConnection 'connections@2024-04-01' = {
-    name: 'storageConnection' //TODO rename to aiSearchConnection
+    name: 'aiSearchConnection'
     properties: {
       category: 'CognitiveSearch'
       target: 'https://${aiSearch.name}.search.windows.net'
-      authType: 'ManagedIdentity'
+      authType: 'AAD'
       isSharedToAll: true
-      // credentials: {
-      //   key: aiSearch.listAdminKeys().primaryKey //If we use AAD we need to ensure the AI Search resource allows AI Studio users access to create indexes and add data to them
-      // }
       metadata: {
         ApiType: 'Azure'
         ResourceId: aiSearch.id
@@ -236,10 +230,7 @@ resource aoaiStudioProject 'Microsoft.MachineLearningServices/workspaces@2024-04
   location: resourceGroup().location
   kind: 'project'
   identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${aiStudioManagedIdentity.id}': {}
-    }
+    type: 'SystemAssigned'
   }
   properties: {
     description: 'AI Studio project for the AI Ops Accelerator'
@@ -250,6 +241,26 @@ resource aoaiStudioProject 'Microsoft.MachineLearningServices/workspaces@2024-04
 
 resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: aiStudioHub
+  name: 'diagnostics'
+  properties: {
+    workspaceId: logAnalyticsId
+    logs: [
+      {
+        categoryGroup: 'AllLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
+
+resource diagnosticsProject 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: aoaiStudioProject
   name: 'diagnostics'
   properties: {
     workspaceId: logAnalyticsId
