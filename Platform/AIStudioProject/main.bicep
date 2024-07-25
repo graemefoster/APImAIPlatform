@@ -132,6 +132,7 @@ module aiSearchRbac 'aistudio-consumer-rbac.bicep' = {
     aiSearchName: aiSearchName
     aiStudioManagedIdentityName: aiStudioManagedIdentityName
     aiStudioManagedIdentityRg: resourceGroup().name
+    azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
   }
 }
 
@@ -186,9 +187,6 @@ resource acrContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
     principalType: 'ServicePrincipal'
   }
 }
-
-//for the AI Studio users to be able to create indexes
-
 
 resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
   name: aiStudioHubName

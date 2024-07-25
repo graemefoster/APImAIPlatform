@@ -3,6 +3,7 @@ targetScope = 'resourceGroup'
 param aiSearchName string
 param aiStudioManagedIdentityName string
 param aiStudioManagedIdentityRg string
+param azureAiStudioUsersGroupObjectId string
 
 resource aiStudioManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' existing = {
   name: aiStudioManagedIdentityName
@@ -32,12 +33,12 @@ resource searchServiceContributor 'Microsoft.Authorization/roleAssignments@2022-
 }
 
 resource aiSearchServiceContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-contributor-${aiSearch.name}')
+  name: guid('${azureAiStudioUsersGroupObjectId}-contributor-${aiSearch.name}')
   scope: aiSearch
   properties: {
     roleDefinitionId: searchServiceContributor.id
-    principalId: aiStudioManagedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
+    principalId: azureAiStudioUsersGroupObjectId
+    principalType: 'Group'
   }
 }
 
