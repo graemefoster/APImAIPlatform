@@ -1,5 +1,8 @@
 targetScope = 'resourceGroup'
 
+//This file is a bit of an experiementation into how AI Studio works. 
+//I'm trying to build out prompt-flows / indexing / understand the security of everything
+
 param location string
 param aiStudioHubName string
 param keyVaultName string
@@ -193,12 +196,11 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     name: 'aiServicesConnection'
     properties: {
       category: 'AzureOpenAI'
-      target: azOpenAI.properties.endpoint // APIm doesn't support an Ingestion endpoint which AI Studio uses to index content...  'https://${aiCentral.properties.defaultHostName}' //needs deployment names exposed via AI Central to match ones in AOAI
-      authType: 'ApiKey'
-      credentials: {
-        key: azOpenAI.listKeys().key1 // Entra doesn't seem to work with the Lookup step. Have raised a bug on Github for this.
-
-      }
+      target: 'https://${aiCentral.properties.defaultHostName}' //  azOpenAI.properties.endpoint //needs deployment names exposed via AI Central to match ones in AOAI
+      authType: 'ManagedIdentity'
+      // credentials: {
+      //   key: azOpenAI.listKeys().key1 // Entra doesn't seem to work with the Lookup step. Have raised a bug on Github for this.
+      // }
       isSharedToAll: true
       metadata: {
         ApiType: 'Azure'
@@ -212,11 +214,11 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     properties: {
       category: 'CognitiveSearch'
       target: 'https://${aiSearch.name}.search.windows.net'
-      authType: 'ApiKey'
+      authType: 'ManagedIdentity'
       isSharedToAll: true
-      credentials: {
-        key: aiSearch.listAdminKeys().primaryKey //If we use AAD we need to ensure the AI Search resource allows AI Studio users access to create indexes and add data to them
-      }
+      // credentials: {
+      //   key: aiSearch.listAdminKeys().primaryKey //If we use AAD we need to ensure the AI Search resource allows AI Studio users access to create indexes and add data to them
+      // }
       metadata: {
         ApiType: 'Azure'
         ResourceId: aiSearch.id
@@ -234,7 +236,10 @@ resource aoaiStudioProject 'Microsoft.MachineLearningServices/workspaces@2024-04
   location: resourceGroup().location
   kind: 'project'
   identity: {
-    type: 'SystemAssigned'
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${aiStudioManagedIdentity.id}': {}
+    }
   }
   properties: {
     description: 'AI Studio project for the AI Ops Accelerator'

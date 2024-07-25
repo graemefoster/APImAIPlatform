@@ -50,6 +50,7 @@ param aoaiPools = [
 
 //These are the consumer requests
 //-------------------------------
+// I've used the same inside / outside names for now to support my AI Studio test work
 param mappedDemands = [
   {
     consumerName: 'consumer-1'
