@@ -149,6 +149,29 @@ resource aoaiContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
+//when I try create compute I am told I need Contributor on the ACR, and the KV
+resource kvContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiStudioManagedIdentity.name}-contributor-${kv.name}')
+  scope: kv
+  properties: {
+    roleDefinitionId: contributor.id
+    principalId: aiStudioManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource acrContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiStudioManagedIdentity.name}-contributor-${acr.name}')
+  scope: acr
+  properties: {
+    roleDefinitionId: contributor.id
+    principalId: aiStudioManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+
+
 resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
   name: aiStudioHubName
   location: resourceGroup().location
