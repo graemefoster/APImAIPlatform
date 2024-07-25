@@ -181,6 +181,11 @@ module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
         version: '2022-12-01'
       }
       {
+        //used by PromptFlow as of July 2024
+        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-07-01-preview.json'
+        version: '2023-07-01-preview'
+      }
+      {
         apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-24-04-01-preview.json'
         version: '2024-04-01-preview'
       }
@@ -264,7 +269,7 @@ var consumerNameToClientIdMappings = [
     entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
   }
   {
-    consumerName: 'consumer-1'
+    consumerName: 'aistudio'
     entraClientId: '18a66f5f-dbdf-4c17-9dd7-1634712a9cbe' //machine learning services app-id. **WARNING** Maybe different in each tenant..
   }
 ]

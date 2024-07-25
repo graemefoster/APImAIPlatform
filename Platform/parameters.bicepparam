@@ -179,7 +179,7 @@ param consumerDemands = [
     costCentre: '123433'
     models: [
       {
-        id: 'embeddings'
+        id: 'aistudioembeddings'
         modelName: 'text-embedding-ada-002'
         environments: {
           dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
@@ -196,7 +196,7 @@ param consumerDemands = [
         }
       }
       {
-        id: 'gpt35'
+        id: 'aistudiogpt35'
         modelName: 'gpt-35-turbo'
         environments: {
           dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
@@ -213,4 +213,5 @@ param consumerDemands = [
         }
       }
     ]
-  }]
+  }
+]

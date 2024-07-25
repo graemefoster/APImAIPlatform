@@ -34,7 +34,7 @@ resource apimProduct 'Microsoft.ApiManagement/service/products@2023-05-01-previe
 
   resource apiLink 'apiLinks@2023-05-01-preview' = [
     for api in apiNames: {
-      name: 'apiLink-${api}'
+      name: 'apiLink-${mappedDemand.consumerName}${api}'
       properties: {
         apiId: resourceId('Microsoft.ApiManagement/service/apis', apimName, api)
       }
