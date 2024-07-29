@@ -27,6 +27,7 @@ param mappedDemands MappedConsumerDemand[]
 param consumerDemands ConsumerDemand[]
 param aoaiResources AzureOpenAIResource[]
 param environmentName string = 'dev'
+param vectorizerEmbeddingsDeploymentName string
 
 //we grant some additional permissions to this group to enable AI Studio to work
 param azureAiStudioUsersGroupObjectId string
@@ -96,7 +97,7 @@ module storage 'Foundation/storage.bicep' = {
     queueDnsZoneId: network.outputs.storageQueuePrivateDnsZoneId
     storageName: storageName
     location: location
-  }  
+  }
 }
 
 module cosmos 'Audit/main.bicep' = {
@@ -108,7 +109,7 @@ module cosmos 'Audit/main.bicep' = {
     cosmosName: cosmosName
     cosmosPrivateDnsZoneId: network.outputs.cosmosPrivateDnsZoneId
     location: location
-  }  
+  }
 }
 
 module textAnalytics 'Audit/text-analytics.bicep' = {
@@ -120,7 +121,7 @@ module textAnalytics 'Audit/text-analytics.bicep' = {
     textAnalyticsName: textAnalyticsName
     location: location
     cogServicesPrivateDnsZoneId: network.outputs.cogServicesPrivateDnsZoneId
-  }  
+  }
 }
 
 module aoais 'AOAI/aoais.bicep' = {
@@ -212,7 +213,6 @@ module consumerHostingPlatform './ConsumerOrchestratorHost/main.bicep' = {
   }
 }
 
-
 module apimProductMappings 'Consumers/consumerDemands.bicep' = {
   name: '${deployment().name}-consumerDemands'
   scope: rg
@@ -226,7 +226,6 @@ module apimProductMappings 'Consumers/consumerDemands.bicep' = {
     consumerNameToClientIdMappings: consumerNameToClientIdMappings
   }
 }
-
 
 //AI Central could be part of the platform. It needs to know the mappings of consumer-names to their system assigned identities to support auto subscription mapping to APIm
 module aiCentral './AICentral/main.bicep' = {
@@ -242,7 +241,6 @@ module aiCentral './AICentral/main.bicep' = {
     peSubnetId: network.outputs.peSubnetId
   }
 }
-
 
 //Simplification - this isn't technically part of the platform but we are going to deploy a web-app to assist our PromptFlow consumer
 module consumerPromptFlow '../Consumers/PromptFlow/main.bicep' = {
@@ -269,11 +267,14 @@ module consumerPromptFlow '../Consumers/PromptFlow/main.bicep' = {
 var consumerNameToClientIdMappings = [
   {
     consumerName: 'consumer-1'
-    entraClientId: consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
+    entraClientId: [
+      consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
+      consumerPromptFlow.outputs.aiSearchIdentityId
+    ]
   }
   {
     consumerName: 'aistudio'
-    entraClientId: '18a66f5f-dbdf-4c17-9dd7-1634712a9cbe' //machine learning services app-id. **WARNING** Maybe different in each tenant..
+    entraClientId: ['18a66f5f-dbdf-4c17-9dd7-1634712a9cbe'] //machine learning services app-id. **WARNING** Maybe different in each tenant..
   }
 ]
 
@@ -287,11 +288,12 @@ module aiCentralConfig './AICentral/config.bicep' = {
     aiGatewayUri: apimFoundation.outputs.apimUri
     consumerNameToAPImSubscriptionSecretMapping: apimProductMappings.outputs.consumerResources
     platformKeyVaultName: platformKeyVault.outputs.kvName
-    consumerNameToClientIdMappings: consumerNameToClientIdMappings 
+    consumerNameToClientIdMappings: consumerNameToClientIdMappings
     textAnalyticsUri: textAnalytics.outputs.textAnalyticsUri
     cosmosConnectionStringSecretUri: cosmos.outputs.cosmosConnectionStringSecretUri
     storageConectionStringSecretUri: storage.outputs.storageConectionStringSecretUri
     textAnalyticsSecretUri: textAnalytics.outputs.textAnalyticsSecretUri
+    embeddingsDeploymentName: vectorizerEmbeddingsDeploymentName
   }
   dependsOn: [aiCentral]
 }

@@ -9,7 +9,7 @@ param mappedDemand MappedConsumerDemand
 param consumerDemand ConsumerDemand
 param environmentName string
 param platformKeyVaultName string
-param consumerAppId string
+param consumerAppIds string[]
 param now string = utcNow('s')
 
 resource platformKeyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
@@ -93,9 +93,10 @@ var tokenRateLimiting = join(
   ),
   '\n'
 )
+var allowedAppIds = join(map(consumerAppIds, appId => '<application-id>${appId}</application-id>'), '')
 var policyXml = replace(loadTextContent('./product-policy.xml'), '{policy-map}', requirementsString)
 var policyXml2 = replace(policyXml, '{policy-pool-map}', poolMapString)
-var policyXml3 = replace(policyXml2, '{applicationId}', consumerAppId)
+var policyXml3 = replace(policyXml2, '{applicationId}', allowedAppIds)
 var policyXml4 = replace(policyXml3, '{policy-pool-size-map}', poolMapSizeString)
 var finalPolicyXml = replace(policyXml4, '{rate-limiting-section}', tokenRateLimiting)
 

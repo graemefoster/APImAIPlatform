@@ -15,7 +15,7 @@
         <!-- We could use AI Central to do a switch, but PromptFlow will hopefully improve this soon -->
         <validate-azure-ad-token tenant-id="{{tenantId}}" header-name="Authorization">
             <client-application-ids>
-                <application-id>{applicationId}</application-id>
+                {applicationIds}
             </client-application-ids>
             <audiences>
                 <audience>https://cognitiveservices.azure.com</audience>

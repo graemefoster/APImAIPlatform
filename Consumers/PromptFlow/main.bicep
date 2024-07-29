@@ -135,27 +135,26 @@ resource azureSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' = {
   }
 
   // these force a dependency on higher SKU levels if I want to use in skillsets
+  resource storageEndpoint 'sharedPrivateLinkResources' = {
+    name: 'storage'
+    properties: {
+      groupId: 'blob'
+      requestMessage: 'Azure Search would like to access your storage account'
+      privateLinkResourceId: consumerStorage.id
+      status: 'Approved'
+    }
+  }
 
-  // resource storageEndpoint 'sharedPrivateLinkResources' = {
-  //   name: 'storage'
-  //   properties: {
-  //     groupId: 'blob'
-  //     requestMessage: 'Azure Search would like to access your storage account'
-  //     privateLinkResourceId: consumerStorage.id
-  //     status: 'Approved'
-  //   }
-  // }
-
-  // resource aiCentralEndpoint 'sharedPrivateLinkResources' = {
-  //   name: 'aicentral'
-  //   properties: {
-  //     groupId: 'sites'
-  //     requestMessage: 'Azure Search would like to access your AOAI resources via AI Central'
-  //     privateLinkResourceId: aiCentralResourceId
-  //     status: 'Approved'
-  //   }
-  //    dependsOn: [storageEndpoint] //doesn't like multiple updates at once
-  // }
+  resource aiCentralEndpoint 'sharedPrivateLinkResources' = {
+    name: 'aicentral'
+    properties: {
+      groupId: 'sites'
+      requestMessage: 'Azure Search would like to access your AOAI resources via AI Central'
+      privateLinkResourceId: aiCentralResourceId
+      status: 'Approved'
+    }
+     dependsOn: [storageEndpoint] //doesn't like multiple updates at once
+  }
 }
 
 
@@ -318,5 +317,11 @@ resource identity 'Microsoft.ManagedIdentity/identities@2023-07-31-preview' exis
   name: 'default'
 }
 
+resource aiSearchIdentity 'Microsoft.ManagedIdentity/identities@2023-07-31-preview' existing = {
+  scope: azureSearch
+  name: 'default'
+}
+
 output promptFlowIdentityPrincipalId string = identity.properties.clientId
 output aiSearchName string = azureSearch.name
+output aiSearchIdentityId string = aiSearchIdentity.properties.clientId

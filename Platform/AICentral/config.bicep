@@ -4,6 +4,7 @@ param aiCentralAppName string
 param location string = resourceGroup().location
 param appInsightsName string
 param aiGatewayUri string
+param embeddingsDeploymentName string
 param platformKeyVaultName string
 param consumerNameToAPImSubscriptionSecretMapping ConsumerNameToApimSubscriptionKey[]
 param consumerNameToClientIdMappings ConsumerNameToClientIdMapping[]
@@ -89,6 +90,14 @@ var allAppSettings = union(flatten(productToClientMappings), [
   {
     name: 'AICentral__TextAnalyticsEndpoint'
     value: textAnalyticsUri
+  }
+  {
+    name: 'AICentral__AISearchEmbeddingsDeploymentName'
+    value: embeddingsDeploymentName
+  }
+  {
+    name: 'AICentral__AISearchEmbeddingsOpenAIApiVersion'
+    value: '2024-04-01-preview'
   }
   {
     name: 'AICentral__StorageConnectionString'
