@@ -246,7 +246,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
     siteConfig: {
       alwaysOn: true
       vnetRouteAllEnabled: true
-      linuxFxVersion: 'DOCKER|promptflows/consumer-1:0.8'
+      linuxFxVersion: 'DOCKER|promptflows/consumer-1:0.9'
       acrUseManagedIdentityCreds: true
       acrUserManagedIdentityID: uami.properties.clientId
       appCommandLine: 'bash start.sh'
