@@ -32,7 +32,7 @@ resource consumerStorage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: replace('${webAppName}-stg', '-', '')
   kind: 'StorageV2'
   location: location
-  sku: {name: 'Standard_LRS'}
+  sku: { name: 'Standard_LRS' }
   properties: {
     accessTier: 'Hot'
     allowBlobPublicAccess: false
@@ -86,7 +86,6 @@ resource kvpe 'Microsoft.Network/privateEndpoints@2023-11-01' = {
         }
       ]
     }
-  
   }
 }
 
@@ -114,7 +113,10 @@ resource azureSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' = {
     name: 'basic'
   }
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${uami.id}': {}
+    }
   }
   properties: {
     authOptions: {
@@ -153,10 +155,9 @@ resource azureSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' = {
       privateLinkResourceId: aiCentralResourceId
       status: 'Approved'
     }
-     dependsOn: [storageEndpoint] //doesn't like multiple updates at once
+    dependsOn: [storageEndpoint] //doesn't like multiple updates at once
   }
 }
-
 
 resource searchDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: azureSearch
@@ -317,11 +318,6 @@ resource identity 'Microsoft.ManagedIdentity/identities@2023-07-31-preview' exis
   name: 'default'
 }
 
-resource aiSearchIdentity 'Microsoft.ManagedIdentity/identities@2023-07-31-preview' existing = {
-  scope: azureSearch
-  name: 'default'
-}
-
 output promptFlowIdentityPrincipalId string = identity.properties.clientId
 output aiSearchName string = azureSearch.name
-output aiSearchIdentityId string = aiSearchIdentity.properties.clientId
+output aiSearchIdentityId string = uami.properties.clientId
