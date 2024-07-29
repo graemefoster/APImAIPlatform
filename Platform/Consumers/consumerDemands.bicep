@@ -21,7 +21,7 @@ module consumer './consumerDemand.bicep' = [
       mappedDemand: filter(mappedDemands, md => md.consumerName == consumerDemands[idx].consumerName)[0]
       environmentName: environmentName
       platformKeyVaultName: platformKeyVaultName
-      consumerAppIds: filter(consumerNameToClientIdMappings, item => item.consumerName == consumerDemands[idx].consumerName)[0].entraClientId
+      consumerAppIds: filter(consumerNameToClientIdMappings, item => item.consumerName == consumerDemands[idx].consumerName)[0].entraClientIds
     }
   }
 ]

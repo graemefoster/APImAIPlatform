@@ -38,15 +38,18 @@ resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
+module clientMappingModules 'expandConfig.bicep' = [
+  for idx in range(0, length(consumerNameToClientIdMappings)): {
+    name: '${deployment().name}-${idx}'
+    params: {
+      input: consumerNameToClientIdMappings[idx]
+      parentIndex: idx
+    }
+  }
+]
+
 var productToClientMappings = [
   for idx in range(0, length(consumerNameToAPImSubscriptionSecretMapping)): [
-    {
-      name: 'AICentral__ClaimsToKeys__${idx}__ClaimValue'
-      value: filter(
-        consumerNameToClientIdMappings,
-        item => item.consumerName == consumerNameToAPImSubscriptionSecretMapping[idx].consumerName
-      )[0].entraClientId
-    }
     {
       name: 'AICentral__ClaimsToKeys__${idx}__SubscriptionKey'
       value: '@Microsoft.KeyVault(SecretUri=${consumerNameToAPImSubscriptionSecretMapping[idx].secretUri})'
@@ -54,7 +57,15 @@ var productToClientMappings = [
   ]
 ]
 
-var allAppSettings = union(flatten(productToClientMappings), [
+module flattened 'flattenConfigs.bicep' = {
+  name: '${deployment().name}-flattened'
+  params: {
+    array1: productToClientMappings
+    array2: [for idx in range(0, length(consumerNameToClientIdMappings)): clientMappingModules[idx].outputs.result]
+  }
+}
+
+var allAppSettings = union(flattened.outputs.result, [
   {
     name: 'DOCKER_REGISTRY_SERVER_URL'
     value: 'https://index.docker.io/v1'

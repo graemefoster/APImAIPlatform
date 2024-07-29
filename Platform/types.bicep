@@ -91,7 +91,7 @@ type ConsumerNameToApimSubscriptionKey = {
 @export()
 type ConsumerNameToClientIdMapping = {
   consumerName: string
-  entraClientId: string[]
+  entraClientIds: string[]
 }
 
 @export()

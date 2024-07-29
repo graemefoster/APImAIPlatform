@@ -267,14 +267,14 @@ module consumerPromptFlow '../Consumers/PromptFlow/main.bicep' = {
 var consumerNameToClientIdMappings = [
   {
     consumerName: 'consumer-1'
-    entraClientId: [
+    entraClientIds: [
       consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
       consumerPromptFlow.outputs.aiSearchIdentityId
     ]
   }
   {
     consumerName: 'aistudio'
-    entraClientId: ['18a66f5f-dbdf-4c17-9dd7-1634712a9cbe'] //machine learning services app-id. **WARNING** Maybe different in each tenant..
+    entraClientIds: ['18a66f5f-dbdf-4c17-9dd7-1634712a9cbe'] //machine learning services app-id. **WARNING** Maybe different in each tenant..
   }
 ]
 
