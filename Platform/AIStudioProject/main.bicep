@@ -156,7 +156,6 @@ resource aoaiContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01
   name: 'a001fd3d-188f-4b5d-821b-7da978bf7442'
 }
 
-
 resource aoaiContributorRoleForAIStudioGroup 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${azureAiStudioUsersGroupObjectId}-aoaiContributor-${azOpenAI.name}')
   scope: azOpenAI
@@ -236,7 +235,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     properties: {
       category: 'AzureOpenAI'
       target: 'https://${aiCentral.properties.defaultHostName}' //  azOpenAI.properties.endpoint //needs deployment names exposed via AI Central to match ones in AOAI
-      authType: 'AAD' //Works apart from the Index Lookup task. This as of July 2024 fails with AAD credent
+      authType: 'AAD' 
       isSharedToAll: true
       metadata: {
         ApiType: 'Azure'
@@ -250,8 +249,11 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     properties: {
       category: 'CognitiveSearch'
       target: 'https://${aiSearch.name}.search.windows.net'
-      authType: 'AAD'
+      authType: 'ApiKey'
       isSharedToAll: true
+      credentials: {
+        key: aiSearch.listAdminKeys().primaryKey //AAD fails on the Index Lookup task. As of July 2024
+      }
       metadata: {
         ApiType: 'Azure'
         ResourceId: aiSearch.id

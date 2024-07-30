@@ -17,6 +17,7 @@ var promptFlowIdentityName = '${webAppName}-uami'
 
 resource promptFlowIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
   name: promptFlowIdentityName
+  location: location
 }
 
 resource acrUami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' existing = {
@@ -95,18 +96,13 @@ resource kvpe 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   }
 }
 
-resource kvSecretsReaderIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
-  name: '${webAppName}-uami'
-  location: location
-}
-
 var kvSecretsReaderRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
 
 resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(kvSecretsReaderIdentity.name, kvSecretsReaderRoleId, kv.id, resourceGroup().id)
+  name: guid(promptFlowIdentity.name, kvSecretsReaderRoleId, kv.id, resourceGroup().id)
   scope: kv
   properties: {
-    principalId: kvSecretsReaderIdentity.properties.principalId
+    principalId: promptFlowIdentity.properties.principalId
     principalType: 'ServicePrincipal'
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', kvSecretsReaderRoleId)
   }
@@ -242,14 +238,14 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
     type: 'UserAssigned'
     userAssignedIdentities: {
       '${acrUami.id}': {}
-      '${kvSecretsReaderIdentity.id}': {}
+      '${promptFlowIdentity.id}': {}
     }
   }
   properties: {
     serverFarmId: appServicePlanId
     vnetImagePullEnabled: false
     virtualNetworkSubnetId: vnetIntegrationSubnet
-    keyVaultReferenceIdentity: kvSecretsReaderIdentity.id
+    keyVaultReferenceIdentity: promptFlowIdentity.id
     siteConfig: {
       alwaysOn: true
       vnetRouteAllEnabled: true
