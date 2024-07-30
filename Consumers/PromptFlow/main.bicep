@@ -13,7 +13,13 @@ param azureSearchPrivateDnsZoneId string
 param aiCentralResourceId string
 param platformRg string
 
-resource uami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' existing = {
+var promptFlowIdentityName = '${webAppName}-uami'
+
+resource promptFlowIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
+  name: promptFlowIdentityName
+}
+
+resource acrUami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' existing = {
   name: acrManagedIdentityName
   scope: resourceGroup(platformRg)
 }
@@ -113,9 +119,9 @@ resource azureSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' = {
     name: 'basic'
   }
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
-      '${uami.id}': {}
+      '${promptFlowIdentity.id}': {}
     }
   }
   properties: {
@@ -189,7 +195,7 @@ resource azSearchRbacOnStorage 'Microsoft.Authorization/roleAssignments@2022-04-
   scope: consumerStorage
   properties: {
     roleDefinitionId: storageReader.id
-    principalId: azureSearch.identity.principalId
+    principalId: promptFlowIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -233,9 +239,9 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   name: webAppName
   location: location
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
-      '${uami.id}': {}
+      '${acrUami.id}': {}
       '${kvSecretsReaderIdentity.id}': {}
     }
   }
@@ -249,7 +255,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
       vnetRouteAllEnabled: true
       linuxFxVersion: 'DOCKER|promptflows/consumer-1:0.9'
       acrUseManagedIdentityCreds: true
-      acrUserManagedIdentityID: uami.properties.clientId
+      acrUserManagedIdentityID: acrUami.properties.clientId
       appCommandLine: 'bash start.sh'
       appSettings: [
         {
@@ -272,6 +278,10 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'PROMPTFLOW_SERVING_ENGINE'
           value: 'fastapi'
         }
+        {
+          name: 'AZURE_CLIENT_ID'
+          value: promptFlowIdentity.properties.clientId
+        }
       ]
     }
   }
@@ -286,7 +296,7 @@ resource appServiceRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: azureSearch
   properties: {
     roleDefinitionId: searchRole.id
-    principalId: webApp.identity.principalId
+    principalId: promptFlowIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -311,13 +321,5 @@ resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' 
   }
 }
 
-//TODO - this doesn't always work first time... the identity doesn't exist. So you might need to run the template twice.
-//I could make it work with a User Assigned Managed Identity, but PromptFlow doesn't support this.
-resource identity 'Microsoft.ManagedIdentity/identities@2023-07-31-preview' existing = {
-  scope: webApp
-  name: 'default'
-}
-
-output promptFlowIdentityPrincipalId string = identity.properties.clientId
 output aiSearchName string = azureSearch.name
-output aiSearchIdentityId string = uami.properties.clientId
+output promptFlowAppIdentityId string = promptFlowIdentity.properties.clientId

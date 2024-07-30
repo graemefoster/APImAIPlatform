@@ -268,8 +268,7 @@ var consumerNameToClientIdMappings = [
   {
     consumerName: 'consumer-1'
     entraClientIds: [
-      consumerPromptFlow.outputs.promptFlowIdentityPrincipalId
-      consumerPromptFlow.outputs.aiSearchIdentityId
+      consumerPromptFlow.outputs.promptFlowAppIdentityId
     ]
   }
   {
