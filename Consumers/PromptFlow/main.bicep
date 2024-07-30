@@ -243,7 +243,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   }
   properties: {
     serverFarmId: appServicePlanId
-    vnetImagePullEnabled: false
+    vnetImagePullEnabled: true
     virtualNetworkSubnetId: vnetIntegrationSubnet
     keyVaultReferenceIdentity: promptFlowIdentity.id
     siteConfig: {

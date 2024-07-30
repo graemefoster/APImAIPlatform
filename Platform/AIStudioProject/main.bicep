@@ -130,7 +130,7 @@ module aiSearchRbac 'aistudio-consumer-rbac.bicep' = {
   scope: resourceGroup(aiSearchRg)
   params: {
     aiSearchName: aiSearchName
-    aiStudioManagedIdentityName: aiStudioManagedIdentityName
+    aiStudioManagedIdentityName: aiStudioManagedIdentity.name
     aiStudioManagedIdentityRg: resourceGroup().name
     azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
   }
