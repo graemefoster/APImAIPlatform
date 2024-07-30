@@ -1,5 +1,6 @@
 promptflow
 promptflow-tools
+promptflow-azure
 azure.identity
 opentelemetry-instrumentation-fastapi
 azureml
