@@ -15,6 +15,11 @@ param aiCentralName string
 param aiSearchRg string
 param aiSearchName string
 param azureAiStudioUsersGroupObjectId string
+param appInsightsName string
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' existing = {
+  name: appInsightsName
+}
 
 resource aiSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' existing = {
   name: aiSearchName
@@ -204,6 +209,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     keyVault: kv.id
     storageAccount: storage.id
     containerRegistry: acr.id
+    applicationInsights: appInsights.id
     primaryUserAssignedIdentity: aiStudioManagedIdentity.id
     publicNetworkAccess: 'Enabled'
     managedNetwork: {
