@@ -185,6 +185,11 @@ module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
         version: '2022-12-01'
       }
       {
+        //used by some bits of Promptflow (the index lookup tool) as of July 2024
+        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-03-15-preview.json'
+        version: '2023-03-15-preview'
+      }
+      {
         //used by PromptFlow as of July 2024
         apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-07-01-preview.json'
         version: '2023-07-01-preview'
