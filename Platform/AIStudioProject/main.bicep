@@ -255,11 +255,8 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     properties: {
       category: 'CognitiveSearch'
       target: 'https://${aiSearch.name}.search.windows.net'
-      authType: 'ApiKey'
+      authType: 'AAD'
       isSharedToAll: true
-      credentials: {
-        key: aiSearch.listAdminKeys().primaryKey //AAD fails on the Index Lookup task. As of July 2024
-      }
       metadata: {
         ApiType: 'Azure'
         ResourceId: aiSearch.id
