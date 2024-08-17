@@ -92,9 +92,10 @@ module storage 'Foundation/storage.bicep' = {
   name: '${deployment().name}-storage'
   scope: rg
   params: {
-    kvName: platformKeyVault.outputs.kvName
     peSubnetId: network.outputs.peSubnetId
     queueDnsZoneId: network.outputs.storageQueuePrivateDnsZoneId
+    blobDnsZoneId: network.outputs.storageBlobPrivateDnsZoneId
+    tableDnsZoneId: network.outputs.storageTablePrivateDnsZoneId
     storageName: storageName
     location: location
   }
@@ -104,7 +105,6 @@ module cosmos 'Audit/main.bicep' = {
   name: '${deployment().name}-cosmos'
   scope: rg
   params: {
-    kvName: platformKeyVault.outputs.kvName
     peSubnetId: network.outputs.peSubnetId
     cosmosName: cosmosName
     cosmosPrivateDnsZoneId: network.outputs.cosmosPrivateDnsZoneId
@@ -244,6 +244,7 @@ module aiCentral './AICentral/main.bicep' = {
     platformKeyVaultName: platformKeyVault.outputs.kvName
     appServiceDnsZoneId: network.outputs.appServicePrivateDnsZoneId
     peSubnetId: network.outputs.peSubnetId
+    cosmosName: cosmos.outputs.cosmosName
   }
 }
 
@@ -294,8 +295,8 @@ module aiCentralConfig './AICentral/config.bicep' = {
     platformKeyVaultName: platformKeyVault.outputs.kvName
     consumerNameToClientIdMappings: consumerNameToClientIdMappings
     textAnalyticsUri: textAnalytics.outputs.textAnalyticsUri
-    cosmosConnectionStringSecretUri: cosmos.outputs.cosmosConnectionStringSecretUri
-    storageConectionStringSecretUri: storage.outputs.storageConectionStringSecretUri
+    cosmosUri: cosmos.outputs.cosmosUri
+    queueUri: storage.outputs.queueUri
     textAnalyticsSecretUri: textAnalytics.outputs.textAnalyticsSecretUri
     embeddingsDeploymentName: vectorizerEmbeddingsDeploymentName
   }
@@ -319,6 +320,7 @@ module aiStudio 'AIStudioProject/main.bicep' = {
     aiSearchName: consumerPromptFlow.outputs.aiSearchName
     aiSearchRg: consumerrg.name
     azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
+    appInsightsName: monitoring.outputs.appInsightsName
   }
 }
 

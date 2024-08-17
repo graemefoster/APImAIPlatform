@@ -7,6 +7,7 @@ param peSubnetId string
 param vnetIntegrationSubnetId string
 param platformKeyVaultName string
 param appServiceDnsZoneId string
+param cosmosName string
 
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: platformKeyVaultName
@@ -17,8 +18,50 @@ resource aiCentralManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentit
   location: location
 }
 
-var kvSecretsReaderRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
+//RBAC for AI Central Managed Identity to write audit logs
+resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' existing = {
+  name: cosmosName
 
+  resource aiCentralWrite 'sqlRoleAssignments' = {
+    name: guid('aiCentralWrite', cosmos.id)
+    properties: {
+      roleDefinitionId: '00000000-0000-0000-0000-000000000002' //Cosmos DB Built-in Data Contributor. You can create a custom role to limit this
+      principalId: aiCentralManagedIdentity.id
+      scope: cosmos.id
+    }
+  }
+}
+
+//RBAC for writing and reading queue messages for background processing
+resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+  name: 'aiCentralStorage'
+}
+
+//AI Central checks if queues exist before writing. I think this needs reader role on the storage
+var readerRoleId = 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+resource aiCentralQueueReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(aiCentralManagedIdentity.name, readerRoleId, storage.id, resourceGroup().id)
+  scope: storage
+  properties: {
+    principalId: aiCentralManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', readerRoleId)
+  }
+}
+
+var queueContributorRoleId = '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
+resource aiCentralQueueContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(aiCentralManagedIdentity.name, queueContributorRoleId, storage.id, resourceGroup().id)
+  scope: storage
+  properties: {
+    principalId: aiCentralManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', queueContributorRoleId)
+  }
+}
+
+//For reading the Language Service secret from Key Vault
+var kvSecretsReaderRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
 resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(aiCentralManagedIdentity.name, kvSecretsReaderRoleId, kv.id, resourceGroup().id)
   scope: kv
@@ -28,6 +71,19 @@ resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', kvSecretsReaderRoleId)
   }
 }
+
+//For reading the Cosmos metadata to check the database exists
+resource aiCentralCosmosReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(aiCentralManagedIdentity.name, readerRoleId, storage.id, resourceGroup().id)
+  scope: cosmos
+  properties: {
+    principalId: aiCentralManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', readerRoleId)
+  }
+}
+
+
 resource aiCentral 'Microsoft.Web/sites@2023-12-01' = {
   location: location
   name: aiCentralAppName
@@ -52,7 +108,7 @@ resource aiCentral 'Microsoft.Web/sites@2023-12-01' = {
       vnetRouteAllEnabled: true
       ipSecurityRestrictions: []
       scmIpSecurityRestrictions: []
-      linuxFxVersion: 'DOCKER|graemefoster/aicentral:0.19.4'
+      linuxFxVersion: 'DOCKER|graemefoster/aicentral:0.19.6-pullrequest0143-0008'
       healthCheckPath: '/healthz'
     }
   }
@@ -90,7 +146,7 @@ resource webappPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' =
         }
       ]
     }
-  } 
+  }
 }
 
 output aiCentralResourceId string = aiCentral.id

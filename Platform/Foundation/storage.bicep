@@ -1,12 +1,9 @@
 param storageName string
+param tableDnsZoneId string
+param blobDnsZoneId string
 param queueDnsZoneId string
 param peSubnetId string
-param kvName string
 param location string = resourceGroup().location
-
-resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
-  name:  kvName
-}
 
 resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: storageName
@@ -22,15 +19,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
-resource storageConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  name: 'logging-queue'
-  parent: kv
-  properties: {
-    contentType: 'text/plain'
-    value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${storage.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
-  }
-}
-
+//The queue is used by AI Central for logging using a background processor.
 resource queuePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   name: '${storageName}-queue-pe'
   location: resourceGroup().location
@@ -51,7 +40,7 @@ resource queuePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = 
     ]
   }
 
-  resource dns 'privateDnsZoneGroups' = {
+  resource queueDns 'privateDnsZoneGroups' = {
     name: '${storageName}-queue-dnszg'
     properties: {
       privateDnsZoneConfigs: [
@@ -66,7 +55,74 @@ resource queuePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = 
   }
 }
 
+resource blobPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+  name: '${storageName}-blob-pe'
+  location: resourceGroup().location
+  properties: {
+    subnet: {
+      id: peSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${storageName}-blob-plsc'
+        properties: {
+          privateLinkServiceId: storage.id
+          groupIds: [
+            'blob'
+          ]
+        }
+      }
+    ]
+  }
 
-output storageQueueConnectionString string = storage.properties.primaryEndpoints.queue
-output storageConectionStringSecretUri string = storageConnectionStringSecret.properties.secretUri
+  resource blobDns 'privateDnsZoneGroups' = {
+    name: '${storageName}-queue-dnszg'
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: 'privatelink.blob.${storageName}'
+          properties: {
+            privateDnsZoneId: blobDnsZoneId
+          }
+        }
+      ]
+    }
+  }
+}
+
+resource tablePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+  name: '${storageName}-table-pe'
+  location: resourceGroup().location
+  properties: {
+    subnet: {
+      id: peSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${storageName}-table-plsc'
+        properties: {
+          privateLinkServiceId: storage.id
+          groupIds: [
+            'table'
+          ]
+        }
+      }
+    ]
+  }
+  resource tableDns 'privateDnsZoneGroups' = {
+    name: '${storageName}-table-dnszg'
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: 'privatelink.table.${storageName}'
+          properties: {
+            privateDnsZoneId: tableDnsZoneId
+          }
+        }
+      ]
+    }
+  }
+}
+
+output queueUri string = storage.properties.primaryEndpoints.queue
 output storageName string = storage.name

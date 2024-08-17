@@ -1,3 +1,4 @@
 consumer-*.bicepparam
 pf/
 .venv/
+.DS_Store

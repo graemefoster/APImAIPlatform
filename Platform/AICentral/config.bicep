@@ -9,9 +9,9 @@ param platformKeyVaultName string
 param consumerNameToAPImSubscriptionSecretMapping ConsumerNameToApimSubscriptionKey[]
 param consumerNameToClientIdMappings ConsumerNameToClientIdMapping[]
 param textAnalyticsUri string
-param cosmosConnectionStringSecretUri string
-param storageConectionStringSecretUri string
 param textAnalyticsSecretUri string
+param cosmosUri string
+param queueUri string
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
@@ -111,16 +111,16 @@ var allAppSettings = union(flattened.outputs.result, [
     value: '2024-04-01-preview'
   }
   {
-    name: 'AICentral__StorageConnectionString'
-    value: '@Microsoft.KeyVault(SecretUri=${storageConectionStringSecretUri})'
+    name: 'AICentral__StorageUri'
+    value: queueUri
   }
   {
     name: 'AICentral__TextAnalyticsKey'
     value: '@Microsoft.KeyVault(SecretUri=${textAnalyticsSecretUri})'
   }
   {
-    name: 'AICentral__CosmosConnectionString'
-    value: '@Microsoft.KeyVault(SecretUri=${cosmosConnectionStringSecretUri})'
+    name: 'AICentral__CosmosAccountEndpoint'
+    value: cosmosUri
   }
   {
     name: 'EnableAICentralSummaryWebPage'

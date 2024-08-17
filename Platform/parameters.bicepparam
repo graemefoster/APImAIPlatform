@@ -1,8 +1,8 @@
 using './main.bicep'
 
 param location = 'australiaeast'
-param platformResourceGroup = 'aiplat5'
-param platformSlug = 'aiplat5'
+param platformResourceGroup = 'aiplat7'
+param platformSlug = 'aiplat7'
 param apimPublisherEmail = 'graemefoster@microsoft.com'
 param apimPublisherName = 'Graeme Foster'
 param environmentName = 'dev'

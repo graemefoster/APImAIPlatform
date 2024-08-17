@@ -208,6 +208,38 @@ resource storageQueuePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-0
   }
 }
 
+resource storageBlobPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.blob.${environment().suffixes.storage}'
+  location: 'global'
+
+  resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
+    name: 'privatelink.blob.azure.net-link'
+    location: 'global'
+    properties: {
+      registrationEnabled: false
+      virtualNetwork: {
+        id: vnet.id
+      }
+    }
+  }
+}
+
+resource storageTablePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.table.${environment().suffixes.storage}'
+  location: 'global'
+
+  resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
+    name: 'privatelink.table.azure.net-link'
+    location: 'global'
+    properties: {
+      registrationEnabled: false
+      virtualNetwork: {
+        id: vnet.id
+      }
+    }
+  }
+}
+
 resource cosmosPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: 'privatelink.documents.azure.com'
   location: 'global'
@@ -279,6 +311,8 @@ output openAiPrivateDnsZoneId string = openAiPrivateDnsZone.id
 output vnetIntegrationSubnetId string = vnetIntegrationSubnet.id
 output kvPrivateDnsZoneId string = kvPrivateDnsZone.id
 output storageQueuePrivateDnsZoneId string = storageQueuePrivateDnsZone.id
+output storageBlobPrivateDnsZoneId string = storageBlobPrivateDnsZone.id
+output storageTablePrivateDnsZoneId string = storageTablePrivateDnsZone.id
 output cosmosPrivateDnsZoneId string = cosmosPrivateDnsZone.id
 output cogServicesPrivateDnsZoneId string = cogServicesPrivateDnsZoneId.id
 output azureSearchPrivateDnsZoneId string = cosmosPrivateDnsZone.id

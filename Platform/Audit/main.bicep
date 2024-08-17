@@ -2,11 +2,6 @@ param cosmosName string
 param peSubnetId string
 param cosmosPrivateDnsZoneId string
 param location string = resourceGroup().location
-param kvName string
-
-resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
-  name: kvName
-}
 
 resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   name: cosmosName
@@ -50,15 +45,6 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   }
 }
 
-resource connectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  name: 'auditdb-connection'
-  parent: kv
-  properties: {
-    contentType: 'text/plain'
-    value: cosmos.listConnectionStrings().connectionStrings[0].connectionString
-  }
-}
-
 resource kvpe 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   name: '${cosmos.name}-pe'
   location: location
@@ -93,4 +79,5 @@ resource kvpe 'Microsoft.Network/privateEndpoints@2023-11-01' = {
     }
   }
 }
-output cosmosConnectionStringSecretUri string = connectionStringSecret.properties.secretUri
+output cosmosUri string = cosmos.properties.documentEndpoint
+output cosmosName string = cosmos.name
