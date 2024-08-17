@@ -6,6 +6,7 @@ param aspId string
 param peSubnetId string
 param vnetIntegrationSubnetId string
 param platformKeyVaultName string
+param storageAccountName string
 param appServiceDnsZoneId string
 param cosmosName string
 
@@ -22,11 +23,15 @@ resource aiCentralManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentit
 resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' existing = {
   name: cosmosName
 
+  resource cosmosBuiltInDataContributorRole 'sqlRoleDefinitions' existing = {
+    name: '00000000-0000-0000-0000-000000000002'
+  }
+
   resource aiCentralWrite 'sqlRoleAssignments' = {
     name: guid('aiCentralWrite', cosmos.id)
     properties: {
-      roleDefinitionId: '00000000-0000-0000-0000-000000000002' //Cosmos DB Built-in Data Contributor. You can create a custom role to limit this
-      principalId: aiCentralManagedIdentity.id
+      roleDefinitionId: cosmosBuiltInDataContributorRole.id //Cosmos DB Built-in Data Contributor. You can create a custom role to limit this
+      principalId: aiCentralManagedIdentity.properties.principalId
       scope: cosmos.id
     }
   }
@@ -34,7 +39,7 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' existing = {
 
 //RBAC for writing and reading queue messages for background processing
 resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
-  name: 'aiCentralStorage'
+  name: storageAccountName
 }
 
 //AI Central checks if queues exist before writing. I think this needs reader role on the storage
@@ -74,7 +79,7 @@ resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
 
 //For reading the Cosmos metadata to check the database exists
 resource aiCentralCosmosReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(aiCentralManagedIdentity.name, readerRoleId, storage.id, resourceGroup().id)
+  name: guid(aiCentralManagedIdentity.name, readerRoleId, cosmos.id, resourceGroup().id)
   scope: cosmos
   properties: {
     principalId: aiCentralManagedIdentity.properties.principalId
@@ -82,7 +87,6 @@ resource aiCentralCosmosReader 'Microsoft.Authorization/roleAssignments@2022-04-
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', readerRoleId)
   }
 }
-
 
 resource aiCentral 'Microsoft.Web/sites@2023-12-01' = {
   location: location
@@ -151,3 +155,4 @@ resource webappPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' =
 
 output aiCentralResourceId string = aiCentral.id
 output name string = aiCentral.name
+output aiCentralUamiClientId string = aiCentralManagedIdentity.properties.clientId

@@ -12,6 +12,7 @@ param textAnalyticsUri string
 param textAnalyticsSecretUri string
 param cosmosUri string
 param queueUri string
+param aiCentralUamiClientId string
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
@@ -121,6 +122,10 @@ var allAppSettings = union(flattened.outputs.result, [
   {
     name: 'AICentral__CosmosAccountEndpoint'
     value: cosmosUri
+  }
+  {
+    name: 'AICentral__UserAssignedManagedIdentityId'
+    value: aiCentralUamiClientId
   }
   {
     name: 'EnableAICentralSummaryWebPage'

@@ -232,7 +232,6 @@ module apimProductMappings 'Consumers/consumerDemands.bicep' = {
   }
 }
 
-//AI Central could be part of the platform. It needs to know the mappings of consumer-names to their system assigned identities to support auto subscription mapping to APIm
 module aiCentral './AICentral/main.bicep' = {
   name: '${deployment().name}-aiCentral'
   scope: rg
@@ -245,6 +244,7 @@ module aiCentral './AICentral/main.bicep' = {
     appServiceDnsZoneId: network.outputs.appServicePrivateDnsZoneId
     peSubnetId: network.outputs.peSubnetId
     cosmosName: cosmos.outputs.cosmosName
+    storageAccountName: storage.outputs.storageName
   }
 }
 
@@ -299,6 +299,7 @@ module aiCentralConfig './AICentral/config.bicep' = {
     queueUri: storage.outputs.queueUri
     textAnalyticsSecretUri: textAnalytics.outputs.textAnalyticsSecretUri
     embeddingsDeploymentName: vectorizerEmbeddingsDeploymentName
+    aiCentralUamiClientId: aiCentral.outputs.aiCentralUamiClientId
   }
   dependsOn: [aiCentral]
 }
