@@ -1,8 +1,8 @@
 using './main.bicep'
 
 param location = 'australiaeast'
-param platformResourceGroup = 'aiplat7'
-param platformSlug = 'aiplat7'
+param platformResourceGroup = 'aiplat8'
+param platformSlug = 'aiplat8'
 param apimPublisherEmail = 'graemefoster@microsoft.com'
 param apimPublisherName = 'Graeme Foster'
 param environmentName = 'dev'
@@ -86,6 +86,12 @@ param mappedDemands = [
         platformTeamPoolMapping: 'graemeopenai-pool'
         outsideDeploymentName: 'testdeploy2'
       }
+      {
+        id: 'aistudiogpt4o'
+        platformTeamDeploymentMapping: 'gpt4o'
+        platformTeamPoolMapping: 'graemeopenai-pool'
+        outsideDeploymentName: 'gpt4o'
+      }
     ]
   }
 ]
@@ -128,6 +134,24 @@ param deploymentRequirements = [
     model: 'text-embedding-ada-002'
     modelVersion: '2'
     thousandsOfTokensPerMinute: 2
+  }
+  {
+    aoaiName: 'graemeopenai'
+    deploymentName: 'gpt4o'
+    enableDynamicQuota: false
+    isPTU: false
+    model: 'gpt-4o'
+    modelVersion: 'latest'
+    thousandsOfTokensPerMinute: 20
+  }
+  {
+    aoaiName: 'graemeopenai2'
+    deploymentName: 'gpt4o'
+    enableDynamicQuota: false
+    isPTU: false
+    model: 'gpt-4o'
+    modelVersion: 'latest'
+    thousandsOfTokensPerMinute: 20
   }
 ]
 
@@ -204,6 +228,23 @@ param consumerDemands = [
           dev: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
           test: { thousandsOfTokens: 1, deployAt: '2024-07-02T00:00:0000' }
           prod: { thousandsOfTokens: 15, deployAt: '2024-07-02T00:00:0000' }
+        }
+        contentSafety: {
+          prompt: {
+            abuse: 'high'
+          }
+          response: {
+            abuse: 'High'
+          }
+        }
+      }
+      {
+        id: 'aistudiogpt4o'
+        modelName: 'gpt4o'
+        environments: {
+          dev: { thousandsOfTokens: 20, deployAt: '2024-07-02T00:00:0000' }
+          test: { thousandsOfTokens: 20, deployAt: '2024-07-02T00:00:0000' }
+          prod: { thousandsOfTokens: 20, deployAt: '2024-07-02T00:00:0000' }
         }
         contentSafety: {
           prompt: {
