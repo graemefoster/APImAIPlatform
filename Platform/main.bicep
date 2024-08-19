@@ -279,7 +279,8 @@ var consumerNameToClientIdMappings = [
   }
   {
     consumerName: 'aistudio'
-    entraClientIds: ['18a66f5f-dbdf-4c17-9dd7-1634712a9cbe'] //machine learning services app-id. **WARNING** Maybe different in each tenant..
+    //machine learning services app-id and the azure CLI to facilitate local-dev.
+    entraClientIds: ['18a66f5f-dbdf-4c17-9dd7-1634712a9cbe', '04b07795-8ddb-461a-bbee-02f9e1bf7b46'] 
   }
 ]
 

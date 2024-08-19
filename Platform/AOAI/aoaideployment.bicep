@@ -22,7 +22,13 @@ resource aoaiDeploymentResource 'Microsoft.CognitiveServices/accounts/deployment
   name: aoaiDeployment.deploymentName
   parent: aoai
   sku: {
-    name: aoaiDeployment.isPTU ? 'ProvisionedManaged' : 'Standard'
+    name: aoaiDeployment.deploymentType == 'PTU' 
+      ? 'ProvisionedManaged' 
+      : aoaiDeployment.deploymentType == 'PAYG' 
+        ? 'Standard'
+        : aoaiDeployment.deploymentType == 'GlobalBatch'
+          ? 'GlobalBatch'
+          : 'GlobalStandard'
     capacity: aoaiDeployment.thousandsOfTokensPerMinute
   }
   properties: {

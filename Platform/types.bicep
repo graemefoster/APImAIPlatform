@@ -1,3 +1,5 @@
+type deploymentType = 'PTU' | 'PAYG' | 'GlobalStandard' | 'GlobalBatch'
+
 @export()
 type DeploymentRequirement = {
   aoaiName: string
@@ -5,7 +7,7 @@ type DeploymentRequirement = {
   model: string
   modelVersion: string
   thousandsOfTokensPerMinute: int
-  isPTU: bool
+  deploymentType: deploymentType
   enableDynamicQuota: bool
 }
 
