@@ -111,13 +111,14 @@ type ConsumerDemand = {
   contactEmail: string
   costCentre: string
   models: ConsumerDemandModel[]
-  constantAppIdIdentifiers: AppIdentifier[]
+  constantAppIdIdentifiers: AppIdentifiers
 }
 
 @export()
-type AppIdentifier = {
-  name: string
-  appId: string
+type AppIdentifiers = {
+  dev: string[]
+  test: string[]
+  prod: string[]
 }
 
 @export() 

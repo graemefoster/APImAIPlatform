@@ -1,18 +1,5 @@
 targetScope = 'subscription'
 
-// import {
-//   AzureOpenAIBackend
-//   AzureOpenAIResource
-//   AzureOpenAIResourcePool
-//   ConsumerModelAccess
-//   DeploymentRequirement
-//   MappedConsumerDemand
-// } from 'Platform/types.bicep'
-
-// import {
-//   ConsumerDemand
-// } from '../ConsumerRequirements/APIMAIPlatformConsumerRequirements/types.bicep'
-
 param platformResourceGroup string
 param platformSlug string
 param apimPublisherEmail string
@@ -21,11 +8,6 @@ param ghRepo string
 param ghUsername string
 param location string
 param tenantId string
-// param aoaiPools AzureOpenAIResourcePool[]
-// param deploymentRequirements DeploymentRequirement[]
-// param mappedDemands MappedConsumerDemand[]
-//param consumerDemands ConsumerDemand[]
-//param aoaiResources AzureOpenAIResource[]
 param environmentName string = 'dev'
 param vectorizerEmbeddingsDeploymentName string
 
@@ -204,6 +186,19 @@ module consumerHostingPlatform 'Platform/ConsumerOrchestratorHost/main.bicep' = 
   }
 }
 
+//TODO find a better way to get these out of JSON. This is a bit of a hack
+var consumerNameToClientIdMappings = [
+  {
+    consumerName: 'consumer-1'
+    entraClientIds: [consumerPromptFlow.outputs.promptFlowAppIdentityId]
+  }
+  {
+    consumerName: 'aistudio'
+    entraClientIds: filter(platformJsonToBicepTypes.outputs.consumerDemands, item => item.consumerName == 'aistudio')[0].constantAppIdIdentifiers[environmentName]
+  }
+]
+
+
 module apimProductMappings 'Platform/Consumers/consumerDemands.bicep' = {
   name: '${deployment().name}-consumerDemands'
   scope: rg
@@ -255,23 +250,6 @@ module consumerPromptFlow 'SampleConsumer/main.bicep' = {
     platformRg: rg.name
   }
 }
-
-//TODO find a better way to get these out of JSON. This is a bit of a hack
-var consumerNameToClientIdMappings = [
-  {
-    consumerName: 'consumer-1'
-    entraClientIds: [
-      consumerPromptFlow.outputs.promptFlowAppIdentityId
-    ]
-  }
-  {
-    consumerName: 'aistudio'
-    entraClientIds: map(
-      filter(platformJsonToBicepTypes.outputs.consumerDemands, item => item.consumerName == 'aistudio')[0].constantAppIdIdentifiers,
-      item => item.appId
-    )
-  }
-]
 
 module aiCentralConfig 'Platform/AICentral/config.bicep' = {
   name: '${deployment().name}-aiCentralConfig'
