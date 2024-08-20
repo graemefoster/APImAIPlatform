@@ -7,7 +7,7 @@ import {
   ConsumerModelAccess
   DeploymentRequirement
   MappedConsumerDemand
-} from './types.bicep'
+} from 'Platform/types.bicep'
 
 import {
   ConsumerDemand
@@ -59,7 +59,7 @@ var logAnalyticsWorkspaceName = '${resourcePrefix}-logs'
 var deploymentIdentityName = '${resourcePrefix}-uami'
 var acrPullIdentityName = '${resourcePrefix}-acrpuller-uami'
 
-module monitoring 'Foundation/monitoring.bicep' = {
+module monitoring 'Platform/Foundation/monitoring.bicep' = {
   name: '${deployment().name}-monitoring'
   scope: rg
   params: {
@@ -69,7 +69,7 @@ module monitoring 'Foundation/monitoring.bicep' = {
   }
 }
 
-module network 'Foundation/networks.bicep' = {
+module network 'Platform/Foundation/networks.bicep' = {
   name: '${deployment().name}-network'
   scope: rg
   params: {
@@ -77,7 +77,7 @@ module network 'Foundation/networks.bicep' = {
   }
 }
 
-module platformKeyVault 'Foundation/kv.bicep' = {
+module platformKeyVault 'Platform/Foundation/kv.bicep' = {
   name: '${deployment().name}-platformkv'
   scope: rg
   params: {
@@ -88,7 +88,7 @@ module platformKeyVault 'Foundation/kv.bicep' = {
   }
 }
 
-module storage 'Foundation/storage.bicep' = {
+module storage 'Platform/Foundation/storage.bicep' = {
   name: '${deployment().name}-storage'
   scope: rg
   params: {
@@ -101,7 +101,7 @@ module storage 'Foundation/storage.bicep' = {
   }
 }
 
-module cosmos 'Audit/main.bicep' = {
+module cosmos 'Platform/Audit/main.bicep' = {
   name: '${deployment().name}-cosmos'
   scope: rg
   params: {
@@ -112,7 +112,7 @@ module cosmos 'Audit/main.bicep' = {
   }
 }
 
-module textAnalytics 'Audit/text-analytics.bicep' = {
+module textAnalytics 'Platform/Audit/text-analytics.bicep' = {
   name: '${deployment().name}-textAnalytics'
   scope: rg
   params: {
@@ -124,7 +124,7 @@ module textAnalytics 'Audit/text-analytics.bicep' = {
   }
 }
 
-module aoais 'AOAI/aoais.bicep' = {
+module aoais 'Platform/AOAI/aoais.bicep' = {
   name: '${deployment().name}-aoais'
   scope: rg
   params: {
@@ -137,7 +137,7 @@ module aoais 'AOAI/aoais.bicep' = {
   }
 }
 
-module azureOpenAiDeployments 'AOAI/aoaideployments.bicep' = {
+module azureOpenAiDeployments 'Platform/AOAI/aoaideployments.bicep' = {
   name: '${deployment().name}-aoaiDeployments'
   scope: rg
   params: {
@@ -147,7 +147,7 @@ module azureOpenAiDeployments 'AOAI/aoaideployments.bicep' = {
   dependsOn: [aoais]
 }
 
-module apimFoundation 'APIm/apim.bicep' = {
+module apimFoundation 'Platform/APIm/apim.bicep' = {
   name: '${deployment().name}-apim'
   scope: rg
   params: {
@@ -164,7 +164,7 @@ module apimFoundation 'APIm/apim.bicep' = {
 
 // Consider cross subscription here. Sometimes we need to create more AOAI resource in other subscriptions.
 // As long as the tenant is the same we can still use Entra to connect from APIm to AOAI.
-module azureOpenAIApimBackends 'APIm/configureAoaiInApim.bicep' = {
+module azureOpenAIApimBackends 'Platform/APIm/configureAoaiInApim.bicep' = {
   name: '${deployment().name}-aoaiBackends'
   scope: rg
   params: {
@@ -174,7 +174,7 @@ module azureOpenAIApimBackends 'APIm/configureAoaiInApim.bicep' = {
   }
 }
 
-module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
+module azureOpenAIApis 'Platform/APIm/aoaiapis.bicep' = {
   name: '${deployment().name}-aoaiApi'
   scope: rg
   params: {
@@ -203,7 +203,7 @@ module azureOpenAIApis 'APIm/aoaiapis.bicep' = {
   dependsOn: [azureOpenAIApimBackends]
 }
 
-module consumerHostingPlatform './ConsumerOrchestratorHost/main.bicep' = {
+module consumerHostingPlatform 'Platform/ConsumerOrchestratorHost/main.bicep' = {
   name: '${deployment().name}-consumerHosting'
   scope: rg
   params: {
@@ -218,7 +218,7 @@ module consumerHostingPlatform './ConsumerOrchestratorHost/main.bicep' = {
   }
 }
 
-module apimProductMappings 'Consumers/consumerDemands.bicep' = {
+module apimProductMappings 'Platform/Consumers/consumerDemands.bicep' = {
   name: '${deployment().name}-consumerDemands'
   scope: rg
   params: {
@@ -232,7 +232,7 @@ module apimProductMappings 'Consumers/consumerDemands.bicep' = {
   }
 }
 
-module aiCentral './AICentral/main.bicep' = {
+module aiCentral 'Platform/AICentral/main.bicep' = {
   name: '${deployment().name}-aiCentral'
   scope: rg
   params: {
@@ -249,7 +249,7 @@ module aiCentral './AICentral/main.bicep' = {
 }
 
 //Simplification - this isn't technically part of the platform but we are going to deploy a web-app to assist our PromptFlow consumer
-module consumerPromptFlow '../Consumers/PromptFlow/main.bicep' = {
+module consumerPromptFlow 'SampleConsumer/main.bicep' = {
   name: '${deployment().name}-consumerPromptFlow'
   scope: consumerrg
   params: {
@@ -284,7 +284,7 @@ var consumerNameToClientIdMappings = [
   }
 ]
 
-module aiCentralConfig './AICentral/config.bicep' = {
+module aiCentralConfig 'Platform/AICentral/config.bicep' = {
   name: '${deployment().name}-aiCentralConfig'
   scope: rg
   params: {
