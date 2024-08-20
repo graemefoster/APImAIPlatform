@@ -90,19 +90,19 @@
         },
         {
             "aoaiName": "graemeopenai",
-            "deploymentName": "graemeopenai",
+            "deploymentName": "gpt4o",
             "enableDynamicQuota": false,
             "deploymentType": "GlobalStandard",
-            "model": "gpt4o",
+            "model": "gpt-4o",
             "modelVersion": "2024-05-13",
             "thousandsOfTokensPerMinute": 20
         },
         {
             "aoaiName": "graemeopenai2",
-            "deploymentName": "graemeopenai",
+            "deploymentName": "gpt4o",
             "enableDynamicQuota": false,
             "deploymentType": "GlobalStandard",
-            "model": "gpt4o",
+            "model": "gpt-4o",
             "modelVersion": "2024-05-13",
             "thousandsOfTokensPerMinute": 20
         }
