@@ -120,7 +120,6 @@
             },
             "models": [
                 {
-                    "id": "embeddings-for-my-purpose",
                     "modelName": "text-embedding-ada-002",
                     "deploymentName": "embeddings",
                     "contentSafety": "high",
@@ -239,7 +238,7 @@
             "consumerName": "consumer-1",
             "requirements": [
                 {
-                    "outsideDeploymentName": "text-embedding-ada-002",
+                    "outsideDeploymentName": "embeddings",
                     "platformTeamDeploymentMapping": "text-embedding-ada-002",
                     "platformTeamPoolMapping": "graemeopenai-embedding-pool"
                 },
@@ -259,7 +258,7 @@
                     "platformTeamPoolMapping": "graemeopenai-embedding-pool"
                 },
                 {
-                    "outsideDeploymentName": "aistudiogpt35",
+                    "outsideDeploymentName": "testdeploy2",
                     "platformTeamDeploymentMapping": "testdeploy2",
                     "platformTeamPoolMapping": "graemeopenai-pool"
                 },
