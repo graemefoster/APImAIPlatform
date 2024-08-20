@@ -13,7 +13,6 @@ type DeploymentRequirement = {
 
 @export()
 type ConsumerModelAccess = {
-  id: string
   platformTeamDeploymentMapping: string
   platformTeamPoolMapping: string
   outsideDeploymentName: string
@@ -80,9 +79,10 @@ type ConsumerDemandEnvironment = {
 
 @export()
 type ConsumerDemandModel = {
-  id: string
+  deploymentName: string
   modelName: string
-  environments: ConsumerDemandEnvironment
+  environments: ConsumerDemandEnvironments
+  contentSafety: ContentSafety
 }
 
 @export()
@@ -121,17 +121,5 @@ type AppIdentifier = {
 }
 
 @export() 
-type ModelContentSafety = {
-  prompt: PromptModelContentSafety
-  response: ResponseModelContentSafety
-}
-
-@export()
-type PromptModelContentSafety = {
-  abuse: string
-}
-@export()
-type ResponseModelContentSafety = {
-  abuse: string
-}
+type ContentSafety = 'low' | 'medium' | 'high'
 

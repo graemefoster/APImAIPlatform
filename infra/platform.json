@@ -11,16 +11,16 @@
     ],
     "apiVersions": [
         {
-            "name": "2022-12-01",
-            "openApiSpecificationUri": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2022-12-01.json"
+            "version": "2022-12-01",
+            "apiSpecUrl": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2022-12-01.json"
         },
         {
-            "name": "2023-07-01-preview",
-            "openApiSpecificationUri": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-07-01-preview.json"
+            "version": "2023-07-01-preview",
+            "apiSpecUrl": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-07-01-preview.json"
         },
         {
-            "name": "2024-04-01-preview",
-            "openApiSpecificationUri": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-24-04-01-preview.json"
+            "version": "2024-04-01-preview",
+            "apiSpecUrl": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-24-04-01-preview.json"
         }
     ],
     "pools": [
@@ -29,11 +29,11 @@
             "azureOpenAIResources": [
                 {
                     "name": "graemeopenai",
-                    "prority": 1
+                    "priority": 1
                 },
                 {
                     "name": "graemeopenai2",
-                    "prority": 2
+                    "priority": 2
                 }
             ]
         },
@@ -42,11 +42,11 @@
             "azureOpenAIResources": [
                 {
                     "name": "graemeopenai",
-                    "prority": 1
+                    "priority": 1
                 },
                 {
                     "name": "graemeopenai2",
-                    "prority": 1
+                    "priority": 1
                 }
             ]
         }
@@ -118,6 +118,8 @@
                 {
                     "id": "embeddings-for-my-purpose",
                     "modelName": "text-embedding-ada-002",
+                    "deploymentName": "embeddings",
+                    "contentSafety" : "high",
                     "environments": {
                         "dev": {
                             "thousandsOfTokens": 1,
@@ -130,20 +132,13 @@
                         "prod": {
                             "thousandsOfTokens": 15,
                             "deployAt": "2024-07-02T00:00:0000"
-                        }
-                    },
-                    "contentSafety": {
-                        "prompt": {
-                            "abuse": "high"
-                        },
-                        "response": {
-                            "abuse": "High"
                         }
                     }
                 },
                 {
-                    "id": "gpt35-for-my-purpose",
                     "modelName": "gpt-35-turbo",
+                    "deploymentName": "gpt35",
+                    "contentSafety" : "high",
                     "environments": {
                         "dev": {
                             "thousandsOfTokens": 1,
@@ -156,14 +151,6 @@
                         "prod": {
                             "thousandsOfTokens": 15,
                             "deployAt": "2024-07-02T00:00:0000"
-                        }
-                    },
-                    "contentSafety": {
-                        "prompt": {
-                            "abuse": "high"
-                        },
-                        "response": {
-                            "abuse": "High"
                         }
                     }
                 }
@@ -174,6 +161,7 @@
             "requestName": "aistudio-requirements",
             "contactEmail": "engineer.name@myorg.com",
             "costCentre": "123433",
+            "contentSafety" : "high",
             "constantAppIdIdentifiers": [
                 {
                     "name": "Azure AI Studio",
@@ -186,7 +174,7 @@
             ],
             "models": [
                 {
-                    "id": "aistudioembeddings",
+                    "deploymentName": "text-embedding-ada-002",
                     "modelName": "text-embedding-ada-002",
                     "environments": {
                         "dev": {
@@ -201,18 +189,10 @@
                             "thousandsOfTokens": 15,
                             "deployAt": "2024-07-02T00:00:0000"
                         }
-                    },
-                    "contentSafety": {
-                        "prompt": {
-                            "abuse": "high"
-                        },
-                        "response": {
-                            "abuse": "High"
-                        }
                     }
                 },
                 {
-                    "id": "aistudiogpt35",
+                    "deploymentName": "testdeploy2",
                     "modelName": "gpt-35-turbo",
                     "environments": {
                         "dev": {
@@ -227,19 +207,12 @@
                             "thousandsOfTokens": 15,
                             "deployAt": "2024-07-02T00:00:0000"
                         }
-                    },
-                    "contentSafety": {
-                        "prompt": {
-                            "abuse": "high"
-                        },
-                        "response": {
-                            "abuse": "High"
-                        }
                     }
                 },
                 {
-                    "id": "aistudiogpt4o",
+                    "deploymentName": "gpt4o",
                     "modelName": "gpt4o",
+                    "contentSafety" : "high",
                     "environments": {
                         "dev": {
                             "thousandsOfTokens": 20,
@@ -253,14 +226,6 @@
                             "thousandsOfTokens": 20,
                             "deployAt": "2024-07-02T00:00:0000"
                         }
-                    },
-                    "contentSafety": {
-                        "prompt": {
-                            "abuse": "high"
-                        },
-                        "response": {
-                            "abuse": "High"
-                        }
                     }
                 }
             ]
@@ -271,16 +236,14 @@
             "consumerName": "consumer-1",
             "requirements": [
                 {
-                    "id": "embeddings-for-my-purpose",
+                    "outsideDeploymentName": "text-embedding-ada-002",
                     "platformTeamDeploymentMapping": "text-embedding-ada-002",
-                    "platformTeamPoolMapping": "graemeopenai-embedding-pool",
-                    "outsideDeploymentName": "embeddings"
+                    "platformTeamPoolMapping": "graemeopenai-embedding-pool"
                 },
                 {
-                    "id": "gpt35-for-my-purpose",
+                    "outsideDeploymentName": "gpt35",
                     "platformTeamDeploymentMapping": "testdeploy2",
-                    "platformTeamPoolMapping": "graemeopenai-pool",
-                    "outsideDeploymentName": "gpt35"
+                    "platformTeamPoolMapping": "graemeopenai-pool"
                 }
             ]
         },
@@ -288,22 +251,19 @@
             "consumerName": "aistudio",
             "requirements": [
                 {
-                    "id": "aistudioembeddings",
+                    "outsideDeploymentName": "text-embedding-ada-002",
                     "platformTeamDeploymentMapping": "text-embedding-ada-002",
-                    "platformTeamPoolMapping": "graemeopenai-embedding-pool",
-                    "outsideDeploymentName": "text-embedding-ada-002"
+                    "platformTeamPoolMapping": "graemeopenai-embedding-pool"
                 },
                 {
-                    "id": "aistudiogpt35",
+                    "outsideDeploymentName": "aistudiogpt35",
                     "platformTeamDeploymentMapping": "testdeploy2",
-                    "platformTeamPoolMapping": "graemeopenai-pool",
-                    "outsideDeploymentName": "testdeploy2"
+                    "platformTeamPoolMapping": "graemeopenai-pool"
                 },
                 {
-                    "id": "aistudiogpt4o",
+                    "outsideDeploymentName": "gpt4o",
                     "platformTeamDeploymentMapping": "gpt4o",
-                    "platformTeamPoolMapping": "graemeopenai-pool",
-                    "outsideDeploymentName": "gpt4o"
+                    "platformTeamPoolMapping": "graemeopenai-pool"
                 }
             ]
         }

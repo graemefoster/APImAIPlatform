@@ -88,7 +88,7 @@ var tokenRateLimiting = join(
   map(
     mappedDemand.requirements,
     r =>
-      '<when condition="@(context.Request.MatchedParameters["deployment-id"] == "${r.outsideDeploymentName}")">\n<azure-openai-token-limit tokens-per-minute="${filter(consumerDemand.models, cd => r.id == cd.id)[0].environments[environmentName].thousandsOfTokens * 1000}" estimate-prompt-tokens="true" tokens-consumed-header-name="consumed-tokens" remaining-tokens-header-name="remaining-tokens" counter-key="${r.outsideDeploymentName}" />\n</when>'
+      '<when condition="@(context.Request.MatchedParameters["deployment-id"] == "${r.outsideDeploymentName}")">\n<azure-openai-token-limit tokens-per-minute="${filter(consumerDemand.models, cd => r.outsideDeploymentName == cd.deploymentName)[0].environments[environmentName].thousandsOfTokens * 1000}" estimate-prompt-tokens="true" tokens-consumed-header-name="consumed-tokens" remaining-tokens-header-name="remaining-tokens" counter-key="${r.outsideDeploymentName}" />\n</when>'
   ),
   '\n'
 )
