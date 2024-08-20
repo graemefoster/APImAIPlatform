@@ -1,0 +1,311 @@
+{
+    "aoaiServices": [
+        {
+            "name": "graemeopenai",
+            "location": "australiaeast"
+        },
+        {
+            "name": "graemeopenai2",
+            "location": "australiaeast"
+        }
+    ],
+    "apiVersions": [
+        {
+            "name": "2022-12-01",
+            "openApiSpecificationUri": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2022-12-01.json"
+        },
+        {
+            "name": "2023-07-01-preview",
+            "openApiSpecificationUri": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-07-01-preview.json"
+        },
+        {
+            "name": "2024-04-01-preview",
+            "openApiSpecificationUri": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-24-04-01-preview.json"
+        }
+    ],
+    "pools": [
+        {
+            "poolName": "graemeopenai-pool",
+            "azureOpenAIResources": [
+                {
+                    "name": "graemeopenai",
+                    "prority": 1
+                },
+                {
+                    "name": "graemeopenai2",
+                    "prority": 2
+                }
+            ]
+        },
+        {
+            "poolName": "graemeopenai-embedding-pool2",
+            "azureOpenAIResources": [
+                {
+                    "name": "graemeopenai",
+                    "prority": 1
+                },
+                {
+                    "name": "graemeopenai2",
+                    "prority": 1
+                }
+            ]
+        }
+    ],
+    "deployments": [
+        {
+            "aoaiName": "graemeopenai",
+            "deploymentName": "testdeploy2",
+            "enableDynamicQuota": false,
+            "deploymentType": "PAYG",
+            "model": "gpt-35-turbo",
+            "modelVersion": "0613",
+            "thousandsOfTokensPerMinute": 5
+        },
+        {
+            "aoaiName": "graemeopenai2",
+            "deploymentName": "testdeploy2",
+            "enableDynamicQuota": false,
+            "deploymentType": "PAYG",
+            "model": "gpt-35-turbo",
+            "modelVersion": "0613",
+            "thousandsOfTokensPerMinute": 5
+        },
+        {
+            "aoaiName": "graemeopenai",
+            "deploymentName": "text-embedding-ada-002",
+            "enableDynamicQuota": false,
+            "deploymentType": "PAYG",
+            "model": "text-embedding-ada-002",
+            "modelVersion": "2",
+            "thousandsOfTokensPerMinute": 2
+        },
+        {
+            "aoaiName": "graemeopenai2",
+            "deploymentName": "text-embedding-ada-002",
+            "enableDynamicQuota": false,
+            "deploymentType": "PAYG",
+            "model": "text-embedding-ada-002",
+            "modelVersion": "2",
+            "thousandsOfTokensPerMinute": 2
+        },
+        {
+            "aoaiName": "graemeopenai",
+            "deploymentName": "graemeopenai",
+            "enableDynamicQuota": false,
+            "deploymentType": "GlobalStandard",
+            "model": "gpt4o",
+            "modelVersion": "2024-05-13",
+            "thousandsOfTokensPerMinute": 20
+        },
+        {
+            "aoaiName": "graemeopenai2",
+            "deploymentName": "graemeopenai",
+            "enableDynamicQuota": false,
+            "deploymentType": "GlobalStandard",
+            "model": "gpt4o",
+            "modelVersion": "2024-05-13",
+            "thousandsOfTokensPerMinute": 20
+        }
+    ],
+    "consumerDemands": [
+        {
+            "consumerName": "consumer-1",
+            "requestName": "my-amazing-service",
+            "contactEmail": "engineer.name@myorg.com",
+            "costCentre": "92304",
+            "constantAppIdIdentifiers": [],
+            "models": [
+                {
+                    "id": "embeddings-for-my-purpose",
+                    "modelName": "text-embedding-ada-002",
+                    "environments": {
+                        "dev": {
+                            "thousandsOfTokens": 1,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        },
+                        "test": {
+                            "thousandsOfTokens": 1,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        },
+                        "prod": {
+                            "thousandsOfTokens": 15,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        }
+                    },
+                    "contentSafety": {
+                        "prompt": {
+                            "abuse": "high"
+                        },
+                        "response": {
+                            "abuse": "High"
+                        }
+                    }
+                },
+                {
+                    "id": "gpt35-for-my-purpose",
+                    "modelName": "gpt-35-turbo",
+                    "environments": {
+                        "dev": {
+                            "thousandsOfTokens": 1,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        },
+                        "test": {
+                            "thousandsOfTokens": 1,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        },
+                        "prod": {
+                            "thousandsOfTokens": 15,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        }
+                    },
+                    "contentSafety": {
+                        "prompt": {
+                            "abuse": "high"
+                        },
+                        "response": {
+                            "abuse": "High"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "consumerName": "aistudio",
+            "requestName": "aistudio-requirements",
+            "contactEmail": "engineer.name@myorg.com",
+            "costCentre": "123433",
+            "constantAppIdIdentifiers": [
+                {
+                    "name": "Azure AI Studio",
+                    "appId": "18a66f5f-dbdf-4c17-9dd7-1634712a9cbe"
+                },
+                {
+                    "name": "Azure CLI",
+                    "appId": "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
+                }
+            ],
+            "models": [
+                {
+                    "id": "aistudioembeddings",
+                    "modelName": "text-embedding-ada-002",
+                    "environments": {
+                        "dev": {
+                            "thousandsOfTokens": 1,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        },
+                        "test": {
+                            "thousandsOfTokens": 1,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        },
+                        "prod": {
+                            "thousandsOfTokens": 15,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        }
+                    },
+                    "contentSafety": {
+                        "prompt": {
+                            "abuse": "high"
+                        },
+                        "response": {
+                            "abuse": "High"
+                        }
+                    }
+                },
+                {
+                    "id": "aistudiogpt35",
+                    "modelName": "gpt-35-turbo",
+                    "environments": {
+                        "dev": {
+                            "thousandsOfTokens": 1,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        },
+                        "test": {
+                            "thousandsOfTokens": 1,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        },
+                        "prod": {
+                            "thousandsOfTokens": 15,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        }
+                    },
+                    "contentSafety": {
+                        "prompt": {
+                            "abuse": "high"
+                        },
+                        "response": {
+                            "abuse": "High"
+                        }
+                    }
+                },
+                {
+                    "id": "aistudiogpt4o",
+                    "modelName": "gpt4o",
+                    "environments": {
+                        "dev": {
+                            "thousandsOfTokens": 20,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        },
+                        "test": {
+                            "thousandsOfTokens": 20,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        },
+                        "prod": {
+                            "thousandsOfTokens": 20,
+                            "deployAt": "2024-07-02T00:00:0000"
+                        }
+                    },
+                    "contentSafety": {
+                        "prompt": {
+                            "abuse": "high"
+                        },
+                        "response": {
+                            "abuse": "High"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "mappedDemands": [
+        {
+            "consumerName": "consumer-1",
+            "requirements": [
+                {
+                    "id": "embeddings-for-my-purpose",
+                    "platformTeamDeploymentMapping": "text-embedding-ada-002",
+                    "platformTeamPoolMapping": "graemeopenai-embedding-pool",
+                    "outsideDeploymentName": "embeddings"
+                },
+                {
+                    "id": "gpt35-for-my-purpose",
+                    "platformTeamDeploymentMapping": "testdeploy2",
+                    "platformTeamPoolMapping": "graemeopenai-pool",
+                    "outsideDeploymentName": "gpt35"
+                }
+            ]
+        },
+        {
+            "consumerName": "aistudio",
+            "requirements": [
+                {
+                    "id": "aistudioembeddings",
+                    "platformTeamDeploymentMapping": "text-embedding-ada-002",
+                    "platformTeamPoolMapping": "graemeopenai-embedding-pool",
+                    "outsideDeploymentName": "text-embedding-ada-002"
+                },
+                {
+                    "id": "aistudiogpt35",
+                    "platformTeamDeploymentMapping": "testdeploy2",
+                    "platformTeamPoolMapping": "graemeopenai-pool",
+                    "outsideDeploymentName": "testdeploy2"
+                },
+                {
+                    "id": "aistudiogpt4o",
+                    "platformTeamDeploymentMapping": "gpt4o",
+                    "platformTeamPoolMapping": "graemeopenai-pool",
+                    "outsideDeploymentName": "gpt4o"
+                }
+            ]
+        }
+    ]
+}

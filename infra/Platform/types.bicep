@@ -28,6 +28,7 @@ type ApiVersion = {
 @export()
 type AzureOpenAIResource = {
   name: string
+  location: string
 }
 
 @export()
@@ -48,8 +49,8 @@ type AzureOpenAIBackend = {
 
 @export()
 type AzureOpenAIResourcePool = {
-  PoolName: string
-  AzureOpenAIResources: BackendPoolMember[]
+  poolName: string
+  azureOpenAIResources: BackendPoolMember[]
 }
 
 @export()
@@ -101,3 +102,36 @@ type BackendPoolMember = {
   name: string
   priority: int
 }
+
+
+@export()
+type ConsumerDemand = {
+  consumerName: string
+  requestName: string
+  contactEmail: string
+  costCentre: string
+  models: ConsumerDemandModel[]
+  constantAppIdIdentifiers: AppIdentifier[]
+}
+
+@export()
+type AppIdentifier = {
+  name: string
+  appId: string
+}
+
+@export() 
+type ModelContentSafety = {
+  prompt: PromptModelContentSafety
+  response: ResponseModelContentSafety
+}
+
+@export()
+type PromptModelContentSafety = {
+  abuse: string
+}
+@export()
+type ResponseModelContentSafety = {
+  abuse: string
+}
+

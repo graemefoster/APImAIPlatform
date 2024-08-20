@@ -2,7 +2,7 @@
 
 ## Creating Indexes
 
-Can't use APIm as the openai definition doesn't include the /ingestion endpoint. You'll need to temporarily change the Connection endpoint for the AOAI connection to do this. TODO - maybe add both in.
+To use APIm for creating an Index via AI Studio you need to open up the /ingestion endpoint which isn't in the Open API file. TODO - add it in as a sample?
 
 AI Studio uses the end user identity, not a system identity to call AOAI. AOAI then calls back out to Azure Search, and AI Studio to perform the indexing tasks.
 

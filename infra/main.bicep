@@ -1,17 +1,17 @@
 targetScope = 'subscription'
 
-import {
-  AzureOpenAIBackend
-  AzureOpenAIResource
-  AzureOpenAIResourcePool
-  ConsumerModelAccess
-  DeploymentRequirement
-  MappedConsumerDemand
-} from 'Platform/types.bicep'
+// import {
+//   AzureOpenAIBackend
+//   AzureOpenAIResource
+//   AzureOpenAIResourcePool
+//   ConsumerModelAccess
+//   DeploymentRequirement
+//   MappedConsumerDemand
+// } from 'Platform/types.bicep'
 
-import {
-  ConsumerDemand
-} from '../ConsumerRequirements/APIMAIPlatformConsumerRequirements/types.bicep'
+// import {
+//   ConsumerDemand
+// } from '../ConsumerRequirements/APIMAIPlatformConsumerRequirements/types.bicep'
 
 param platformResourceGroup string
 param platformSlug string
@@ -21,11 +21,11 @@ param ghRepo string
 param ghUsername string
 param location string
 param tenantId string
-param aoaiPools AzureOpenAIResourcePool[]
-param deploymentRequirements DeploymentRequirement[]
-param mappedDemands MappedConsumerDemand[]
-param consumerDemands ConsumerDemand[]
-param aoaiResources AzureOpenAIResource[]
+// param aoaiPools AzureOpenAIResourcePool[]
+// param deploymentRequirements DeploymentRequirement[]
+// param mappedDemands MappedConsumerDemand[]
+//param consumerDemands ConsumerDemand[]
+//param aoaiResources AzureOpenAIResource[]
 param environmentName string = 'dev'
 param vectorizerEmbeddingsDeploymentName string
 
@@ -58,6 +58,11 @@ var textAnalyticsName = replace('${resourcePrefix}-textan', '-', '')
 var logAnalyticsWorkspaceName = '${resourcePrefix}-logs'
 var deploymentIdentityName = '${resourcePrefix}-uami'
 var acrPullIdentityName = '${resourcePrefix}-acrpuller-uami'
+
+module platformJsonToBicepTypes 'jsonParametersToBicep.bicep' = {
+  name: '${deployment().name}-jsonToBicep'
+  scope: rg
+}
 
 module monitoring 'Platform/Foundation/monitoring.bicep' = {
   name: '${deployment().name}-monitoring'
@@ -128,7 +133,7 @@ module aoais 'Platform/AOAI/aoais.bicep' = {
   name: '${deployment().name}-aoais'
   scope: rg
   params: {
-    aoaiNames: aoaiResources
+    aoaiNames: platformJsonToBicepTypes.outputs.aoaiResources
     location: location
     privateDnsZoneId: network.outputs.openAiPrivateDnsZoneId
     privateEndpointSubnetId: network.outputs.peSubnetId
@@ -141,7 +146,7 @@ module azureOpenAiDeployments 'Platform/AOAI/aoaideployments.bicep' = {
   name: '${deployment().name}-aoaiDeployments'
   scope: rg
   params: {
-    deploymentRequirements: deploymentRequirements
+    deploymentRequirements: platformJsonToBicepTypes.outputs.aoaiDeployments
     aoaiOutputs: aoais.outputs.aoaiResources
   }
   dependsOn: [aoais]
@@ -170,7 +175,7 @@ module azureOpenAIApimBackends 'Platform/APIm/configureAoaiInApim.bicep' = {
   params: {
     apimName: apimFoundation.outputs.apimName
     aoaiResources: aoais.outputs.aoaiResources
-    aoaiBackendPools: aoaiPools
+    aoaiBackendPools: platformJsonToBicepTypes.outputs.apimBackendPools
   }
 }
 
@@ -179,26 +184,7 @@ module azureOpenAIApis 'Platform/APIm/aoaiapis.bicep' = {
   scope: rg
   params: {
     apimName: apimFoundation.outputs.apimName
-    azureOpenAiApis: [
-      {
-        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2022-12-01.json'
-        version: '2022-12-01'
-      }
-      {
-        //used by some bits of Promptflow (the index lookup tool) as of July 2024
-        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-03-15-preview.json'
-        version: '2023-03-15-preview'
-      }
-      {
-        //used by PromptFlow as of July 2024
-        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-2023-07-01-preview.json'
-        version: '2023-07-01-preview'
-      }
-      {
-        apiSpecUrl: 'https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/Platform/AOAI/openapi/aoai-24-04-01-preview.json'
-        version: '2024-04-01-preview'
-      }
-    ]
+    azureOpenAiApis: platformJsonToBicepTypes.outputs.apiVersions
   }
   dependsOn: [azureOpenAIApimBackends]
 }
@@ -223,8 +209,8 @@ module apimProductMappings 'Platform/Consumers/consumerDemands.bicep' = {
   scope: rg
   params: {
     apimName: apimFoundation.outputs.apimName
-    consumerDemands: consumerDemands
-    mappedDemands: mappedDemands
+    consumerDemands: platformJsonToBicepTypes.outputs.consumerDemands
+    mappedDemands: platformJsonToBicepTypes.outputs.platformMappedConsumerDemands
     apiNames: azureOpenAIApis.outputs.aoaiApiNames
     environmentName: environmentName
     platformKeyVaultName: platformKeyVaultName
@@ -270,6 +256,7 @@ module consumerPromptFlow 'SampleConsumer/main.bicep' = {
   }
 }
 
+//TODO find a better way to get these out of JSON. This is a bit of a hack
 var consumerNameToClientIdMappings = [
   {
     consumerName: 'consumer-1'
@@ -279,8 +266,10 @@ var consumerNameToClientIdMappings = [
   }
   {
     consumerName: 'aistudio'
-    //machine learning services app-id and the azure CLI to facilitate local-dev.
-    entraClientIds: ['18a66f5f-dbdf-4c17-9dd7-1634712a9cbe', '04b07795-8ddb-461a-bbee-02f9e1bf7b46'] 
+    entraClientIds: map(
+      filter(platformJsonToBicepTypes.outputs.consumerDemands, item => item.consumerName == 'aistudio')[0].constantAppIdIdentifiers,
+      item => item.appId
+    )
   }
 ]
 
@@ -305,8 +294,8 @@ module aiCentralConfig 'Platform/AICentral/config.bicep' = {
   dependsOn: [aiCentral]
 }
 
-//try deploy an AI Studio hub / project
-// module aiStudio 'AIStudioProject/main.bicep' = {
+// //try deploy an AI Studio hub / project
+// module aiStudio 'Platform/AIStudioProject/main.bicep' = {
 //   name: '${deployment().name}-aiStudio'
 //   scope: rg
 //   params: {

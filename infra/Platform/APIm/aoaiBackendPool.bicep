@@ -11,7 +11,7 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
 }
 
 resource backend 'Microsoft.ApiManagement/service/backends@2023-09-01-preview' = {
-  name: pool.PoolName
+  name: pool.poolName
   parent: apim
   properties: {
     title: 'Azure OpenAI Pool'
@@ -19,7 +19,7 @@ resource backend 'Microsoft.ApiManagement/service/backends@2023-09-01-preview' =
     type: 'Pool'
     pool: {
       services: [
-        for poolMember in pool.AzureOpenAIResources: {
+        for poolMember in pool.azureOpenAIResources: {
           id: filter(backendServices, item => toLower(item.friendlyName) == toLower(poolMember.name))[0].backendId
           priority: poolMember.priority
           weight: 1

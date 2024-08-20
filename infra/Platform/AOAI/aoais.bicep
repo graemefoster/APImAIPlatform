@@ -20,7 +20,7 @@ module aoai './aoai.bicep' = [
       aoaiName: aoaiName.name
       privateDnsZoneId: privateDnsZoneId
       privateEndpointSubnetId: privateEndpointSubnetId
-      location: location
+      location: aoaiName.location
       resourcePrefix: resourcePrefix
       logAnalyticsId: logAnalyticsId
     }

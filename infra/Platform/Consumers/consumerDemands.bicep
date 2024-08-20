@@ -1,7 +1,6 @@
 targetScope = 'resourceGroup'
 
-import { ConsumerModelAccess, MappedConsumerDemand, ConsumerDemandOutput, ConsumerNameToClientIdMapping } from '../types.bicep'
-import { ConsumerDemand } from '../../../ConsumerRequirements/APIMAIPlatformConsumerRequirements/types.bicep'
+import { ConsumerModelAccess, MappedConsumerDemand, ConsumerDemandOutput, ConsumerNameToClientIdMapping, ConsumerDemand  } from '../types.bicep'
 
 param apimName string
 param mappedDemands MappedConsumerDemand[]
