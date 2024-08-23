@@ -1,3 +1,10 @@
+#
+
+```
+cd ./infra
+az deployment sub create --location <location> --template-file ./main.bicep --parameters ./parameters.bicepparam
+```
+
 # TODO after setup
 
 ## Creating Indexes

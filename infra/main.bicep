@@ -273,24 +273,24 @@ module aiCentralConfig 'Platform/AICentral/config.bicep' = {
 }
 
 // //try deploy an AI Studio hub / project
-// module aiStudio 'Platform/AIStudioProject/main.bicep' = {
-//   name: '${deployment().name}-aiStudio'
-//   scope: rg
-//   params: {
-//     location: location
-//     aiStudioHubName: '${resourcePrefix}-aishub'
-//     keyVaultName: platformKeyVault.outputs.kvName
-//     storageName: storage.outputs.storageName
-//     acrName: aiStudioAcrName
-//     azopenaiName: aoais.outputs.aoaiResources[0].resourceName
-//     aiStudioProjectName: '${resourcePrefix}-aisprj3'
-//     logAnalyticsId: monitoring.outputs.logAnalyticsId
-//     aiCentralName: aiCentral.outputs.name
-//     aiSearchName: consumerPromptFlow.outputs.aiSearchName
-//     aiSearchRg: consumerrg.name
-//     azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
-//     appInsightsName: monitoring.outputs.appInsightsName
-//   }
-// }
+module aiStudio 'Platform/AIStudioProject/main.bicep' = {
+  name: '${deployment().name}-aiStudio'
+  scope: rg
+  params: {
+    location: location
+    aiStudioHubName: '${resourcePrefix}-aishub'
+    keyVaultName: platformKeyVault.outputs.kvName
+    storageName: storage.outputs.storageName
+    acrName: aiStudioAcrName
+    azopenaiName: aoais.outputs.aoaiResources[0].resourceName
+    aiStudioProjectName: '${resourcePrefix}-aisprj'
+    logAnalyticsId: monitoring.outputs.logAnalyticsId
+    aiCentralName: aiCentral.outputs.name
+    aiSearchName: consumerPromptFlow.outputs.aiSearchName
+    aiSearchRg: consumerrg.name
+    azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
+    appInsightsName: monitoring.outputs.appInsightsName
+  }
+}
 
 output GITHUB_ACR_PULL_CLIENT_ID string = consumerHostingPlatform.outputs.ghActionsClientId
