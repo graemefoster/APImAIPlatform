@@ -88,6 +88,8 @@ resource blobPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
       ]
     }
   }
+
+  dependsOn: [queuePrivateEndpoint]
 }
 
 resource tablePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
@@ -122,6 +124,7 @@ resource tablePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = 
       ]
     }
   }
+  dependsOn: [blobPrivateEndpoint]
 }
 
 output queueUri string = storage.properties.primaryEndpoints.queue

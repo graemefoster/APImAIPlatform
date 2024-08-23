@@ -10,6 +10,8 @@ param environmentName string
 param platformKeyVaultName string
 param consumerNameToClientIdMappings ConsumerNameToClientIdMapping[]
 
+//Got errors when doing these in larger batches. Let's serialise them to reduce the chance.
+@batchSize(1)
 module consumer './consumerDemand.bicep' = [
   for idx in range(0, length(mappedDemands)): {
     name: '${deployment().name}-consumer-${consumerDemands[idx].consumerName}'

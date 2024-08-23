@@ -14,6 +14,12 @@ param vectorizerEmbeddingsDeploymentName string
 //we grant some additional permissions to this group to enable AI Studio to work
 param azureAiStudioUsersGroupObjectId string
 
+//if we want a developer vm:
+param deployDeveloperVm bool
+param developerUsername string
+@secure()
+param developerPassword string
+
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: '${platformResourceGroup}-${environmentName}'
   location: location
@@ -198,7 +204,6 @@ var consumerNameToClientIdMappings = [
   }
 ]
 
-
 module apimProductMappings 'Platform/Consumers/consumerDemands.bicep' = {
   name: '${deployment().name}-consumerDemands'
   scope: rg
@@ -290,6 +295,23 @@ module aiStudio 'Platform/AIStudioProject/main.bicep' = {
     aiSearchRg: consumerrg.name
     azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
     appInsightsName: monitoring.outputs.appInsightsName
+  }
+}
+
+module developerVm './Platform/DeveloperVM/main.bicep' = if (deployDeveloperVm) {
+  name: '${deployment().name}-developerVm'
+  scope: rg
+  params: {
+    location: location
+    bastionName: '${replace(resourcePrefix, '-', '')}bastion'
+    vmName: 'developervm'
+    vmSize: 'Standard_D2s_v4'
+    vmImage: '2022-datacenter-azure-edition'
+    vnetId: network.outputs.vnetId
+    vnetSubnetId: network.outputs.peSubnetId
+    bastionSubnetId: network.outputs.bastionSubnetId
+    vmUser: developerUsername
+    vmPassword: developerPassword
   }
 }
 

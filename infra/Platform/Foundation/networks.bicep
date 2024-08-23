@@ -159,6 +159,25 @@ resource vnetIntegrationSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-1
   dependsOn: [peSubnet]
 }
 
+resource vmSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' = {
+  name: 'vm-subnet'
+  parent: vnet
+  properties: {
+    addressPrefix: cidrSubnet(addressSpace, 24, 3)
+  }
+  dependsOn: [vnetIntegrationSubnet]
+}
+
+resource bastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' = {
+  name: 'AzureBastionSubnet'
+  parent: vnet
+  properties: {
+    addressPrefix: cidrSubnet(addressSpace, 24, 4)
+  }
+  dependsOn: [vmSubnet]
+}
+
+
 resource openAiPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: 'privatelink.openai.azure.com'
   location: 'global'
@@ -317,4 +336,4 @@ output cosmosPrivateDnsZoneId string = cosmosPrivateDnsZone.id
 output cogServicesPrivateDnsZoneId string = cogServicesPrivateDnsZoneId.id
 output azureSearchPrivateDnsZoneId string = cosmosPrivateDnsZone.id
 output appServicePrivateDnsZoneId string = appServicePrivateDnsZone.id
-
+output bastionSubnetId string = bastionSubnet.id
