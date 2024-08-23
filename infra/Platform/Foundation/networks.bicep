@@ -334,6 +334,6 @@ output storageBlobPrivateDnsZoneId string = storageBlobPrivateDnsZone.id
 output storageTablePrivateDnsZoneId string = storageTablePrivateDnsZone.id
 output cosmosPrivateDnsZoneId string = cosmosPrivateDnsZone.id
 output cogServicesPrivateDnsZoneId string = cogServicesPrivateDnsZoneId.id
-output azureSearchPrivateDnsZoneId string = cosmosPrivateDnsZone.id
+output azureSearchPrivateDnsZoneId string = cogSearchPrivateDnsZone.id
 output appServicePrivateDnsZoneId string = appServicePrivateDnsZone.id
 output bastionSubnetId string = bastionSubnet.id

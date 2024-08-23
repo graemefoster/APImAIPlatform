@@ -8,8 +8,8 @@ param apimPublisherName = 'Graeme Foster'
 param environmentName = 'dev'
 param ghRepo = 'aPImAIPlatform'
 param ghUsername = 'graemefoster'
-param tenantId = '16b3c013-d300-468d-ac64-7eda0820b6d3'
-param azureAiStudioUsersGroupObjectId = '01a84fb4-5df7-4d37-ac5b-3ac350e21105'
+param tenantId = 'a77c67fe-34bf-43d1-9652-7150e6c155c3'
+param azureAiStudioUsersGroupObjectId = '1381b12e-7398-41ea-9faa-fce77bff0ec9'
 param vectorizerEmbeddingsDeploymentName = 'embeddings'
 
 param deployDeveloperVm = true
