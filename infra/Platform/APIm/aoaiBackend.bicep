@@ -35,6 +35,10 @@ resource backend 'Microsoft.ApiManagement/service/backends@2023-05-01-preview' =
                 min: 500
                 max: 599
               }
+              {
+                min: 429
+                max: 429
+              }
             ]
           }
           name: 'aoaiBreaker'

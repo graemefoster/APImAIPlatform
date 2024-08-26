@@ -14,4 +14,4 @@ param vectorizerEmbeddingsDeploymentName = 'embeddings'
 
 param deployDeveloperVm = true
 param developerUsername = 'developer'
-//param developerPassword = ''
+param developerPassword = ''
