@@ -1,8 +1,8 @@
 using './main.bicep'
 
 param location = 'australiaeast'
-param platformResourceGroup = 'aiplat10'
-param platformSlug = 'aiplat10'
+param platformResourceGroup = 'aiplat11'
+param platformSlug = 'aiplat11'
 param apimPublisherEmail = 'graemefoster@microsoft.com'
 param apimPublisherName = 'Graeme Foster'
 param environmentName = 'dev'
@@ -15,3 +15,6 @@ param vectorizerEmbeddingsDeploymentName = 'embeddings'
 param deployDeveloperVm = false
 param developerUsername = 'developer'
 param developerPassword = ''
+
+//sample features
+param deployProductKeyAugmentingApi = true

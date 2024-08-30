@@ -6,7 +6,7 @@ param aoaiResources AzureOpenAIResourceOutput[]
 param aoaiBackendPools AzureOpenAIResourcePool[]
 param apimName string
 
-resource apim 'Microsoft.ApiManagement/service@2019-12-01' existing = {
+resource apim 'Microsoft.ApiManagement/service@2023-09-01-preview' existing = {
   name: apimName
 }
 

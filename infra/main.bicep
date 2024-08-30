@@ -14,6 +14,9 @@ param vectorizerEmbeddingsDeploymentName string
 //we grant some additional permissions to this group to enable AI Studio to work
 param azureAiStudioUsersGroupObjectId string
 
+//Adds an API to APIm which appends product keys to incoming requests, then re-routes them to the AOAI API
+param deployProductKeyAugmentingApi bool = false
+
 //if we want a developer vm:
 param deployDeveloperVm bool
 param developerUsername string
@@ -152,6 +155,7 @@ module apimFoundation 'Platform/APIm/apim.bicep' = {
     apimSubnetId: network.outputs.apimSubnetId
     tenantId: tenantId
     location: location
+    deploySubscriptionKeyAugmentingApi: deployProductKeyAugmentingApi
   }
 }
 
