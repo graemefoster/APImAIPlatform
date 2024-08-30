@@ -40,12 +40,13 @@ var subscriptionKeyMap = join(
 )
 
 var policyXml = replace(loadTextContent('./subscriptionKeyAugmenterPolicy.xml'), '{subscription-key-map}', subscriptionKeyMap)
+var finalPolicyXml = replace(policyXml, '{apim-base-url}', apim.properties.gatewayUrl)
 
 resource productFragment 'Microsoft.ApiManagement/service/products/policies@2023-05-01-preview' = {
   parent: subscriptionKeyAugmentingProduct
   name: 'policy'
   properties: {
     format: 'rawxml'
-    value: policyXml
+    value: finalPolicyXml
   }
 }
