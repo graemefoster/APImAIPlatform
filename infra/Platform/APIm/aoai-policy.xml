@@ -1,24 +1,38 @@
 <policies>
     <inbound>
         <base />
-        <authentication-managed-identity resource="https://cognitiveservices.azure.com/" output-token-variable-name="managed-id-access-token" ignore-error="false" />
-        <!-- set header manually to keep some Azure APIm policies happy that explicitly look for this -->
-        <set-header name="Authorization" exists-action="override">
-            <value>@("Bearer " + (string)context.Variables["managed-id-access-token"])</value>
-        </set-header>
-        <azure-openai-emit-token-metric>
-            <dimension name="API ID" />
-            <dimension name="Product ID" />
-            <dimension name="Operation ID" />
-        </azure-openai-emit-token-metric>
+
+        <!-- if we are in augmenting mode then don't use managed identity. Just proxy the incoming auth header through -->
+        <choose>
+            <when condition="@(((bool)context.Variables["isAugmentingKey"]) == false)">
+                <authentication-managed-identity resource="https://cognitiveservices.azure.com/" output-token-variable-name="managed-id-access-token" ignore-error="false" />
+                <!-- set header manually to keep some Azure APIm policies happy that explicitly look for this -->
+                <set-header name="Authorization" exists-action="override">
+                    <value>@("Bearer " + (string)context.Variables["managed-id-access-token"])</value>
+                </set-header>
+                <azure-openai-emit-token-metric>
+                    <dimension name="API ID" />
+                    <dimension name="Product ID" />
+                    <dimension name="Operation ID" />
+                </azure-openai-emit-token-metric>
+            </when>
+        </choose>
+
     </inbound>
     <backend>
 
-        <!-- retry over the backend pools - if we get 429's or 500's from a downstream we don't want to return that to the consumer unless we have no choice -->
-        <retry condition="@((context.Response.StatusCode >= 500 && context.Response.StatusCode < 599) || context.Response.StatusCode == 429)" 
-            count="@((int)context.Variables["backendPoolSize"])" interval="0" max-interval="100" delta="10" first-fast-retry="true">
-            <forward-request buffer-request-body="true" buffer-response="false" />
-        </retry>
+        <choose>
+            <when condition="@(((bool)context.Variables["isAugmentingKey"]) == false)">
+                <!-- retry over the backend pools - if we get 429's or 500's from a downstream we don't want to return that to the consumer unless we have no choice -->
+                <retry condition="@((context.Response.StatusCode >= 500 && context.Response.StatusCode < 599) || context.Response.StatusCode == 429)" count="@((int)context.Variables["backendPoolSize"])" interval="0" max-interval="100" delta="10" first-fast-retry="true">
+                    <forward-request buffer-request-body="true" buffer-response="false" />
+                </retry>
+            </when>
+            <otherwise>
+                <!-- if we are in augmenting mode then no retries. Just proxy on through -->
+                <forward-request buffer-request-body="true" buffer-response="false" />
+            </otherwise>
+        </choose>
 
     </backend>
     <outbound>

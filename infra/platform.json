@@ -38,7 +38,7 @@
             ]
         },
         {
-            "poolName": "graemeopenai-embedding-pool2",
+            "poolName": "graemeopenai-embedding-pool",
             "azureOpenAIResources": [
                 {
                     "name": "graemeopenai",

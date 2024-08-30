@@ -7,7 +7,11 @@
 <policies>
     <!-- Throttle, authorize, validate, cache, or transform the requests -->
     <inbound>
+
         <base />
+
+        <!-- Changes the behaviour of the main policy -->
+        <set-variable name="isAugmentingKey" value="@(false)" />
 
         <!-- authorise the caller. We know the expected id on the incoing jwt -->
         <!-- Note we are authorising the Cog Services scope. Not great, but libraries like -->

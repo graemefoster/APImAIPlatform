@@ -7,8 +7,13 @@
 <policies>
     <!-- Throttle, authorize, validate, cache, or transform the requests -->
     <inbound>
+
+        <base />
+
+        <!-- Changes the behaviour of the main policy -->
+        <set-variable name="isAugmentingKey" value="@(true)" />
+
         <!-- choose not to use the base behaviour. We just want to forward to the new downstream -->
-        <!-- <base /> -->
         <!-- authorise the caller. We know the expected id on the incoing jwt -->
         <!-- Note we are authorising the Cog Services scope. Not great, but libraries like -->
         <!-- Promptflow don't give us any chance to intercept the token -->
@@ -18,6 +23,7 @@
                 <audience>https://cognitiveservices.azure.com</audience>
             </audiences>
         </validate-azure-ad-token>
+
         <set-variable name="apiKey" value="@{
             var subscriptionKey = "";
             var incomingAppId = ((Jwt)context.Variables["consumerJwt"])?.Claims.GetValueOrDefault("appid") ?? string.Empty;
@@ -27,7 +33,7 @@
             return "";
             }" />
         <choose>
-            <when condition="@(string.IsNullOrEmpty((string)context.Variables["api-key"]))">
+            <when condition="@(string.IsNullOrEmpty((string)context.Variables["apiKey"]))">
                 <return-response>
                     <set-status code="401" reason="Unauthorized" />
                 </return-response>
@@ -37,13 +43,16 @@
             <value>@((string)context.Variables["apiKey"])</value>
         </set-header>
 
+        <!-- we lose the /openai off the API. TODO - see if we can improve this by fiddling with the base url of the API -->
+        <set-variable name="newUrl" value="@(context.Operation.UrlTemplate.Replace("/{deployment-id}/", "/" + (string)context.Request.MatchedParameters["deployment-id"] + "/"))" />
+        <rewrite-uri template="@((string)context.Variables["newUrl"])" copy-unmatched-params="true" />
+
         <set-backend-service base-url="{apim-base-url}" />
-        
+
     </inbound>
     <!-- Control if and how the requests are forwarded to services  -->
     <backend>
-        <!-- override the load balancing behaviour -->
-        <forward-request buffer-request-body="true" buffer-response="false" />
+        <base />
     </backend>
     <!-- Customize the responses -->
     <outbound>
