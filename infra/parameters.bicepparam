@@ -17,4 +17,4 @@ param developerUsername = 'developer'
 param developerPassword = ''
 
 //sample features
-param deployProductKeyAugmentingApi = true
+param deploySubscriptionKeyAugmentingApi = true

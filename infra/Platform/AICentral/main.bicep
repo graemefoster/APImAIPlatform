@@ -5,18 +5,13 @@ param location string = resourceGroup().location
 param aspId string
 param peSubnetId string
 param vnetIntegrationSubnetId string
-param platformKeyVaultName string
 param storageAccountName string
 param appServiceDnsZoneId string
 param cosmosName string
+param aiCentralManagedIdentityName string
 
-resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
-  name: platformKeyVaultName
-}
-
-resource aiCentralManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
-  name: '${aiCentralAppName}-uami'
-  location: location
+resource aiCentralManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' existing = {
+  name: aiCentralManagedIdentityName
 }
 
 //RBAC for AI Central Managed Identity to write audit logs
@@ -28,7 +23,7 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' existing = {
   }
 
   resource aiCentralWrite 'sqlRoleAssignments' = {
-    name: guid('aiCentralWrite', cosmos.id)
+    name: guid(aiCentralManagedIdentity.name, 'aiCentralWrite', cosmos.id)
     properties: {
       roleDefinitionId: cosmosBuiltInDataContributorRole.id //Cosmos DB Built-in Data Contributor. You can create a custom role to limit this
       principalId: aiCentralManagedIdentity.properties.principalId
@@ -62,18 +57,6 @@ resource aiCentralQueueContributor 'Microsoft.Authorization/roleAssignments@2022
     principalId: aiCentralManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', queueContributorRoleId)
-  }
-}
-
-//For reading the Language Service secret from Key Vault
-var kvSecretsReaderRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
-resource kvSecretsReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(aiCentralManagedIdentity.name, kvSecretsReaderRoleId, kv.id, resourceGroup().id)
-  scope: kv
-  properties: {
-    principalId: aiCentralManagedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', kvSecretsReaderRoleId)
   }
 }
 

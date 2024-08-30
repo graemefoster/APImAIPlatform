@@ -9,6 +9,8 @@ param consumerDemand ConsumerDemand
 param environmentName string
 param platformKeyVaultName string
 param consumerAppIds string[]
+param platformUamiClientId string
+
 param now string = utcNow('s')
 
 resource platformKeyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
@@ -61,6 +63,19 @@ resource platformSubscriptionKey 'Microsoft.KeyVault/vaults/secrets@2023-07-01' 
   }
 }
 
+resource apimNamedValueForKey 'Microsoft.ApiManagement/service/namedValues@2023-05-01-preview' = {
+  name: 'subkey-${mappedDemand.consumerName}'
+  parent: apim
+  properties: {
+    displayName: 'subkey-${mappedDemand.consumerName}'
+    keyVault: {
+      secretIdentifier: platformSubscriptionKey.properties.secretUri
+      identityClientId: platformUamiClientId
+    }
+    secret: true
+  }
+}
+
 //build up the policy for the Product. Start with rewrite-url to make the inside deployment correct, but keep a stable outside deployment
 var requirementsString = join(
   map(
@@ -110,3 +125,4 @@ resource productFragment 'Microsoft.ApiManagement/service/products/policies@2023
 
 output conasumerName string = consumerDemand.consumerName
 output subscriptionKeySecretUri string = platformSubscriptionKey.properties.secretUri
+output subscriptionKeyNamedValue string = apimNamedValueForKey.properties.displayName

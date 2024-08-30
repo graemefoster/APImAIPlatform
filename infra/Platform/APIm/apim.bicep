@@ -5,6 +5,7 @@ param apimPublisherEmail string
 param apimPublisherName string
 param apimSubnetId string
 param tenantId string
+param platformManagedIdentityId string
 
 param appInsightsName string
 param logAnalyticsWorkspaceName string
@@ -15,7 +16,10 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' = {
   name: apimName
   location: location
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${platformManagedIdentityId}': {}
+    }
   }
   sku: {
     name: 'Developer'
@@ -68,6 +72,16 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
 }
 
+resource appInsightsLoggerNamedValue 'Microsoft.ApiManagement/service/namedValues@2023-09-01-preview' = {
+  name: 'appInsightsInstrumentationKey'
+  parent: apim
+  properties: {
+    displayName: 'appInsightsInstrumentationKey'
+    value: appInsights.properties.InstrumentationKey
+    secret: true
+  }
+}
+
 //setup an APIm app-insights logger
 resource appInsightsLogger 'Microsoft.ApiManagement/service/loggers@2023-05-01-preview' = {
   name: 'applicationInsights'
@@ -76,7 +90,7 @@ resource appInsightsLogger 'Microsoft.ApiManagement/service/loggers@2023-05-01-p
     loggerType: 'applicationInsights'
     description: 'Application Insights Logger'
     credentials: {
-      instrumentationKey: appInsights.properties.InstrumentationKey
+      instrumentationKey: '{{appInsightsInstrumentationKey}}' //stops creating a new named value on each deployment.
     }
     resourceId: appInsights.id
     metrics: true

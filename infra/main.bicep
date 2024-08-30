@@ -15,7 +15,7 @@ param vectorizerEmbeddingsDeploymentName string
 param azureAiStudioUsersGroupObjectId string
 
 //Adds an API to APIm which appends product keys to incoming requests, then re-routes them to the AOAI API
-param deployProductKeyAugmentingApi bool = false
+param deploySubscriptionKeyAugmentingApi bool = false
 
 //if we want a developer vm:
 param deployDeveloperVm bool
@@ -81,6 +81,7 @@ module platformKeyVault 'Platform/Foundation/kv.bicep' = {
     kvDnsZoneId: network.outputs.kvPrivateDnsZoneId
     peSubnetId: network.outputs.peSubnetId
     location: location
+    platformName: platformSlug
   }
 }
 
@@ -155,7 +156,7 @@ module apimFoundation 'Platform/APIm/apim.bicep' = {
     apimSubnetId: network.outputs.apimSubnetId
     tenantId: tenantId
     location: location
-    deploySubscriptionKeyAugmentingApi: deployProductKeyAugmentingApi
+    platformManagedIdentityId: platformKeyVault.outputs.platformManagedIdentityId
   }
 }
 
@@ -219,6 +220,18 @@ module apimProductMappings 'Platform/Consumers/consumerDemands.bicep' = {
     environmentName: environmentName
     platformKeyVaultName: platformKeyVaultName
     consumerNameToClientIdMappings: consumerNameToClientIdMappings
+    platformUamiClientId: platformKeyVault.outputs.platformManagedIdentityClientId
+  }
+}
+
+module subscriptionKeyAugmenting 'Platform/Consumers/subscriptionKeyAugmenter.bicep' = if (deploySubscriptionKeyAugmentingApi) {
+  name: '${deployment().name}-subscriptionKeyAugmenter'
+  scope: rg
+  params: {
+    apimName: apimName
+    apiNames: azureOpenAIApis.outputs.aoaiApiNames
+    consumerNameToClientIdMappings: consumerNameToClientIdMappings
+    consumerDemandSubscriptionKeySecrets: apimProductMappings.outputs.consumerResources
   }
 }
 
@@ -230,11 +243,11 @@ module aiCentral 'Platform/AICentral/main.bicep' = {
     aspId: consumerHostingPlatform.outputs.aspId
     vnetIntegrationSubnetId: network.outputs.vnetIntegrationSubnetId
     aiCentralAppName: aiCentralAppName
-    platformKeyVaultName: platformKeyVault.outputs.kvName
     appServiceDnsZoneId: network.outputs.appServicePrivateDnsZoneId
     peSubnetId: network.outputs.peSubnetId
     cosmosName: cosmos.outputs.cosmosName
     storageAccountName: storage.outputs.storageName
+    aiCentralManagedIdentityName: platformKeyVault.outputs.platformManagedIdentityName
   }
 }
 

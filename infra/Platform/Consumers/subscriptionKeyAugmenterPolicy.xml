@@ -1,0 +1,53 @@
+<!--
+    - Policies are applied in the order they appear.
+    - Position <base/> inside a section to inherit policies from the outer scope.
+    - Comments within policies are not preserved.
+-->
+<!-- Add policies as children to the <inbound>, <outbound>, <backend>, and <on-error> elements -->
+<policies>
+    <!-- Throttle, authorize, validate, cache, or transform the requests -->
+    <inbound>
+        <!-- choose not to use the base behaviour. We just want to forward to the new downstream -->
+        <!-- <base /> -->
+        <!-- authorise the caller. We know the expected id on the incoing jwt -->
+        <!-- Note we are authorising the Cog Services scope. Not great, but libraries like -->
+        <!-- Promptflow don't give us any chance to intercept the token -->
+        <!-- We could use AI Central to do a switch, but PromptFlow will hopefully improve this soon -->
+        <validate-azure-ad-token tenant-id="{{tenantId}}" header-name="Authorization" output-token-variable-name="consumerJwt">
+            <audiences>
+                <audience>https://cognitiveservices.azure.com</audience>
+            </audiences>
+        </validate-azure-ad-token>
+        <set-variable name="apiKey" value="@{
+            var subscriptionKey = "";
+            var incomingAppId = ((Jwt)context.Variables["consumerJwt"])?.Claims.GetValueOrDefault("appid") ?? string.Empty;
+
+            {subscription-key-map}
+
+            return "";
+            }" />
+        <choose>
+            <when condition="@(string.IsNullOrEmpty((string)context.Variables["api-key"]))">
+                <return-response>
+                    <set-status code="401" reason="Unauthorized" />
+                </return-response>
+            </when>
+        </choose>
+        <set-header name="api-key" exists-action="override">
+            <value>@((string)context.Variables["apiKey"])</value>
+        </set-header>
+    </inbound>
+    <!-- Control if and how the requests are forwarded to services  -->
+    <backend>
+        <!-- override the load balancing behaviour -->
+        <forward-request buffer-request-body="true" buffer-response="false" />
+    </backend>
+    <!-- Customize the responses -->
+    <outbound>
+        <base />
+    </outbound>
+    <!-- Handle exceptions and customize error responses  -->
+    <on-error>
+        <base />
+    </on-error>
+</policies>

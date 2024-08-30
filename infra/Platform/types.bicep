@@ -62,6 +62,7 @@ type MappedConsumerDemand = {
 type ConsumerDemandOutput = {
   consumerName: string
   secretUri: string
+  apimNamedValue: string
 }
 
 @export()
