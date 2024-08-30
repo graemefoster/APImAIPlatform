@@ -43,11 +43,7 @@
             <value>@((string)context.Variables["apiKey"])</value>
         </set-header>
 
-        <!-- we lose the /openai off the API. TODO - see if we can improve this by fiddling with the base url of the API -->
-        <set-variable name="newUrl" value="@(context.Operation.UrlTemplate.Replace("/{deployment-id}/", "/" + (string)context.Request.MatchedParameters["deployment-id"] + "/"))" />
-        <rewrite-uri template="@((string)context.Variables["newUrl"])" copy-unmatched-params="true" />
-
-        <set-backend-service base-url="{apim-base-url}" />
+        <set-backend-service base-url="{apim-base-url}/openai/" />
 
     </inbound>
     <!-- Control if and how the requests are forwarded to services  -->
