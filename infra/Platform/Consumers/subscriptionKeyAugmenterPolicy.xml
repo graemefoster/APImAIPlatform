@@ -43,6 +43,7 @@
             <value>@((string)context.Variables["apiKey"])</value>
         </set-header>
 
+        <!-- https://techcommunity.microsoft.com/t5/azure-paas-blog/self-chained-apim-request-limitation-in-internal-virtual-network/ba-p/1940417 -->
         <set-backend-service base-url="https://127.0.0.1/openai/" />
         <set-header name="Host" exists-action="override">
             <value>{apim-host-name}</value>
