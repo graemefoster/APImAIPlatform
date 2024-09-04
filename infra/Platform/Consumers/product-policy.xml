@@ -68,6 +68,7 @@
 
         <set-variable name="newUrl" value="@(context.Operation.UrlTemplate.Replace("/{deployment-id}/", "/" + (string)context.Variables["newDeploymentId"] + "/"))" />
         <rewrite-uri template="@((string)context.Variables["newUrl"])" copy-unmatched-params="true" />
+
         <set-backend-service id="apim-generated-policy" backend-id="@((string)context.Variables["newBackendPoolId"])" />
 
     </inbound>

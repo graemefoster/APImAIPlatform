@@ -43,7 +43,10 @@
             <value>@((string)context.Variables["apiKey"])</value>
         </set-header>
 
-        <set-backend-service base-url="{apim-base-url}/openai/" />
+        <set-backend-service base-url="https://127.0.0.1/openai/" />
+        <set-header name="Host" exists-action="override">
+            <value>{apim-host-name}</value>
+        </set-header>
 
     </inbound>
     <!-- Control if and how the requests are forwarded to services  -->

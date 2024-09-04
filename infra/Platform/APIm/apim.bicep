@@ -32,7 +32,7 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' = {
     virtualNetworkConfiguration: {
       subnetResourceId: apimSubnetId
     }
-    virtualNetworkType: 'External'
+    virtualNetworkType: 'Internal'
   }
 
   resource namedValue 'namedValues' = {
