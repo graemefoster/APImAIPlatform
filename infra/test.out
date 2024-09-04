@@ -1,0 +1,13 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+Date: Mon, 02 Sep 2024 01:49:06 GMT
+Server: Kestrel
+Transfer-Encoding: chunked
+apim-request-id: 4fb35970-7ee5-4b68-941b-92191658f8e4
+x-ratelimit-remaining-requests: 1
+x-ratelimit-remaining-tokens: 1996
+X-Request-ID: 72137788-9258-4d91-8256-68c7d747ecb5
+x-ms-client-request-id: Not-Set
+X-Content-Type-Options: nosniff
+x-ms-region: Australia East
+
