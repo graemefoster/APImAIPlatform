@@ -157,6 +157,7 @@ module apimFoundation 'Platform/APIm/apim.bicep' = {
     tenantId: tenantId
     location: location
     platformManagedIdentityId: platformKeyVault.outputs.platformManagedIdentityId
+    apimPrivateDnsZoneName: network.outputs.apimPrivateDnsZoneName
   }
 }
 

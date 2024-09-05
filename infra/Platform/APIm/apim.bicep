@@ -9,6 +9,7 @@ param platformManagedIdentityId string
 
 param appInsightsName string
 param logAnalyticsWorkspaceName string
+param apimPrivateDnsZoneName string
 
 param location string = resourceGroup().location
 
@@ -41,6 +42,19 @@ resource apim 'Microsoft.ApiManagement/service@2023-05-01-preview' = {
       displayName: 'tenantId'
       value: tenantId
     }
+  }
+}
+
+//A-Record for the APIm Gateway
+resource apimDnsRecord 'Microsoft.Network/privateDnsZones/A@2020-06-01' = {
+  name: '${apimPrivateDnsZoneName}/${apim.name}'
+  properties: {
+    ttl: 3600
+    aRecords: [
+      {
+        ipv4Address: apim.properties.privateIPAddresses[0]
+      }
+    ]
   }
 }
 

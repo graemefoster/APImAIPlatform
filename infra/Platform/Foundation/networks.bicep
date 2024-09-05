@@ -323,6 +323,22 @@ resource appServicePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01'
   }
 }
 
+resource apimPrivateDnsZoneId 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'azure-api.net'
+  location: 'global'
+
+  resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
+    name: 'privatelink.azurewebsites.net-link'
+    location: 'global'
+    properties: {
+      registrationEnabled: false
+      virtualNetwork: {
+        id: vnet.id
+      }
+    }
+  }
+}
+
 output vnetId string = vnet.id
 output apimSubnetId string = apimSubnet.id
 output peSubnetId string = peSubnet.id
@@ -337,3 +353,4 @@ output cogServicesPrivateDnsZoneId string = cogServicesPrivateDnsZoneId.id
 output azureSearchPrivateDnsZoneId string = cogSearchPrivateDnsZone.id
 output appServicePrivateDnsZoneId string = appServicePrivateDnsZone.id
 output bastionSubnetId string = bastionSubnet.id
+output apimPrivateDnsZoneName string = apimPrivateDnsZoneId.name
