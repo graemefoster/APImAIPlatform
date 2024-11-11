@@ -13,6 +13,7 @@ param vectorizerEmbeddingsDeploymentName string
 param azureMachineLearningServicePrincipalId string
 
 //we grant some additional permissions to this group to enable AI Studio to work
+@description('The service principal id representing app 0736f41a-0425-4b46-bdb5-1563eff02385 (Azure Machine Learning) in your Entra tenant')
 param azureAiStudioUsersGroupObjectId string
 
 //Adds an API to APIm which appends product keys to incoming requests, then re-routes them to the AOAI API
