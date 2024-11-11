@@ -16,6 +16,7 @@ param aiSearchRg string
 param aiSearchName string
 param azureAiStudioUsersGroupObjectId string
 param appInsightsName string
+param azureMachineLearningServicePrincipalId string
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' existing = {
   name: appInsightsName
@@ -119,6 +120,16 @@ resource uamiRoleAssignmentNetworkApprover 'Microsoft.Authorization/roleAssignme
   }
 }
 
+resource uamiRoleAICentralAssignmentNetworkApprover 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiStudioManagedIdentity.name}-networkapprover-${aiCentral.name}')
+  scope: aiCentral
+  properties: {
+    roleDefinitionId: aiStudioNetworkApprover.id
+    principalId: aiStudioManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource uamiRoleAssignmentAcrPush 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${aiStudioManagedIdentity.name}-acrpush-${acr.name}')
   scope: acr
@@ -138,6 +149,7 @@ module aiSearchRbac 'aistudio-consumer-rbac.bicep' = {
     aiStudioManagedIdentityName: aiStudioManagedIdentity.name
     aiStudioManagedIdentityRg: resourceGroup().name
     azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
+    azureMachineLearningServicePrincipalId: azureMachineLearningServicePrincipalId
   }
 }
 
@@ -192,7 +204,23 @@ resource acrContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
+//give Azure AI Studio appid (0736f41a-0425-4b46-bdb5-1563eff02385) read access to backing services
+//so it can check private endpoint status
+resource readerRole 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+}
+
+resource aiStudioReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${azureMachineLearningServicePrincipalId}-reader-${resourceGroup().name}')
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: readerRole.id
+    principalId: azureMachineLearningServicePrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-preview' = {
   name: aiStudioHubName
   location: resourceGroup().location
   identity: {
@@ -214,52 +242,43 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' =
     publicNetworkAccess: 'Enabled'
     managedNetwork: {
       isolationMode: 'AllowInternetOutbound'
-      outboundRules: {
-        sampleapi: {
-          type: 'PrivateEndpoint'
-          category: 'UserDefined'
-          destination: {
-            serviceResourceId: aiCentral.id
-            subresourceTarget: 'sites'
-          }
-        }
-        //From what I can see, adding a AI Search connection doesn't auto create a private endpoint to AI Search. In contrast to adding an AOAI connection.
-        aiSearch: {
-          type: 'PrivateEndpoint'
-          category: 'UserDefined'
-          destination: {
-            serviceResourceId: aiSearch.id
-            subresourceTarget: 'searchService'
-          }
-        }
-      }
     }
   }
 
-  resource aiServicesConnection 'connections@2024-04-01' = {
+  resource aiServicesConnection 'connections@2024-07-01-preview' = {
     name: 'aiServicesConnection'
     properties: {
       category: 'AzureOpenAI'
       target: 'https://${aiCentral.properties.defaultHostName}' //  azOpenAI.properties.endpoint //needs deployment names exposed via AI Central to match ones in AOAI
-      authType: 'AAD' 
+      authType: 'AAD'
       isSharedToAll: true
+      peRequirement: 'Required'
+      useWorkspaceManagedIdentity: true
       metadata: {
         ApiType: 'Azure'
         ResourceId: azOpenAI.id
+        ApiVersion: '2024-05-01-preview'
+        DeploymentApiVersion: '2023-11-01'
+        Location: location
       }
     }
   }
 
-  resource aiSearchConnection 'connections@2024-04-01' = {
+  resource aiSearchConnection 'connections@2024-07-01-preview' = {
     name: 'aiSearchConnection'
     properties: {
       category: 'CognitiveSearch'
       target: 'https://${aiSearch.name}.search.windows.net'
       authType: 'AAD'
       isSharedToAll: true
+      useWorkspaceManagedIdentity: true
+      peRequirement: 'Required'
       metadata: {
         ApiType: 'Azure'
+        ApiVersion: '2024-05-01-preview'
+        DeploymentApiVersion: '2023-11-01'
         ResourceId: aiSearch.id
+        Location: location
       }
     }
     dependsOn: [

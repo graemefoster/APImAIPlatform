@@ -4,6 +4,7 @@ param aiSearchName string
 param aiStudioManagedIdentityName string
 param aiStudioManagedIdentityRg string
 param azureAiStudioUsersGroupObjectId string
+param azureMachineLearningServicePrincipalId string
 
 resource aiStudioManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' existing = {
   name: aiStudioManagedIdentityName
@@ -42,7 +43,6 @@ resource aiSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-
   }
 }
 
-
 // For AI Studio PromptFlows - these should use the UAMI and need to query indexes
 resource searchIndexReader 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
   name: '1407120a-92aa-4202-b7e9-c0e197c71c8f'
@@ -54,6 +54,22 @@ resource aiSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-01
   properties: {
     roleDefinitionId: searchIndexReader.id
     principalId: aiStudioManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+//give Azure AI Studio appid (0736f41a-0425-4b46-bdb5-1563eff02385) read access to backing services
+//so it can check private endpoint status
+resource readerRole 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+}
+
+resource aiStudioReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${azureMachineLearningServicePrincipalId}-reader-${resourceGroup().name}')
+  scope: aiSearch
+  properties: {
+    roleDefinitionId: readerRole.id
+    principalId: azureMachineLearningServicePrincipalId
     principalType: 'ServicePrincipal'
   }
 }

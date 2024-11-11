@@ -10,12 +10,15 @@ param location string
 param tenantId string
 param environmentName string = 'dev'
 param vectorizerEmbeddingsDeploymentName string
+param azureMachineLearningServicePrincipalId string
 
 //we grant some additional permissions to this group to enable AI Studio to work
 param azureAiStudioUsersGroupObjectId string
 
 //Adds an API to APIm which appends product keys to incoming requests, then re-routes them to the AOAI API
 param deploySubscriptionKeyAugmentingApi bool = false
+
+param deployAIStudio bool
 
 //if we want a developer vm:
 param deployDeveloperVm bool
@@ -296,7 +299,7 @@ module aiCentralConfig 'Platform/AICentral/config.bicep' = {
 }
 
 // //try deploy an AI Studio hub / project
-module aiStudio 'Platform/AIStudioProject/main.bicep' = {
+module aiStudio 'Platform/AIStudioProject/main.bicep' = if (deployAIStudio) {
   name: '${deployment().name}-aiStudio'
   scope: rg
   params: {
@@ -313,6 +316,7 @@ module aiStudio 'Platform/AIStudioProject/main.bicep' = {
     aiSearchRg: consumerrg.name
     azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
     appInsightsName: monitoring.outputs.appInsightsName
+    azureMachineLearningServicePrincipalId: azureMachineLearningServicePrincipalId
   }
 }
 
