@@ -74,19 +74,6 @@ resource uamiRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01'
   }
 }
 
-resource kvSecretsOfficer 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
-}
-
-resource uamiRoleAssignmentKv 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-kvsecretsofficer-${kv.name}')
-  scope: kv
-  properties: {
-    roleDefinitionId: kvSecretsOfficer.id
-    principalId: aiStudioManagedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
 
 resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
@@ -183,12 +170,17 @@ resource aoaiContributorRoleForAIStudioGroup 'Microsoft.Authorization/roleAssign
   }
 }
 
-//when I try create compute I am told I need Contributor on the ACR, and the KV
+//when I try create compute I am told I need Contributor on the ACR, and KV Administrator on the KV
+var kvAdministrator = '00482a5a-887f-4fb3-b363-3b7fe8e74483'
+resource kvAdministratorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: kvAdministrator
+}
+
 resource kvContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-contributor-${kv.name}')
+  name: guid('${aiStudioManagedIdentity.name}-kvadministrator-${kv.name}')
   scope: kv
   properties: {
-    roleDefinitionId: contributor.id
+    roleDefinitionId: kvAdministratorRole.id
     principalId: aiStudioManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
