@@ -74,7 +74,6 @@ resource uamiRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01'
   }
 }
 
-
 resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 }
@@ -212,6 +211,16 @@ resource aiStudioReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
+resource aiStudioIdentityContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiStudioManagedIdentityName}-contributor-${resourceGroup().name}')
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: contributor.id
+    principalId: aiStudioManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-preview' = {
   name: aiStudioHubName
   location: resourceGroup().location
@@ -234,6 +243,16 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-pr
     publicNetworkAccess: 'Enabled'
     managedNetwork: {
       isolationMode: 'AllowInternetOutbound'
+      outboundRules: {
+        Connection_AICentral: {
+          type: 'PrivateEndpoint'
+          destination: {
+            serviceResourceId: aiCentral.id
+            subresourceTarget: 'sites'
+          }
+          category: 'UserDefined'
+        }
+      }
     }
   }
 
