@@ -21,6 +21,10 @@
         {
             "version": "2024-04-01-preview",
             "apiSpecUrl": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/infra/Platform/AOAI/openapi/aoai-24-04-01-preview.json"
+        },
+        {
+            "version": "2024-05-01-preview",
+            "apiSpecUrl": "https://raw.githubusercontent.com/graemefoster/APImAIPlatform/main/infra/Platform/AOAI/openapi/aoai-2024-05-01-preview.json"
         }
     ],
     "pools": [
