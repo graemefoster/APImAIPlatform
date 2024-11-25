@@ -139,6 +139,34 @@ module aiSearchRbac 'aistudio-consumer-rbac.bicep' = {
   }
 }
 
+//https://learn.microsoft.com/en-gb/azure/ai-studio/how-to/disable-local-auth?tabs=portal&WT.mc_id=Portal-Microsoft_Azure_MLTeamAccounts#scenarios-for-hub-storage-account-role-assignments
+//grant the RBAC for the users-group to be able to write promptflows
+resource storageBlobDataContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+}
+resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
+}
+
+resource aoaiUsersStorageDataContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${azureAiStudioUsersGroupObjectId}-storage-data-contributor-${storage.name}')
+  scope: azOpenAI
+  properties: {
+    roleDefinitionId: storageBlobDataContributor.id
+    principalId: azureAiStudioUsersGroupObjectId
+    principalType: 'Group'
+  }
+}
+resource aoaiUsersStorageDataFileContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${azureAiStudioUsersGroupObjectId}-storage-file-privileged-contributor-${storage.name}')
+  scope: azOpenAI
+  properties: {
+    roleDefinitionId: storageFileDataPrivilegedContributor.id
+    principalId: azureAiStudioUsersGroupObjectId
+    principalType: 'Group'
+  }
+}
+
 //Allow AI Studio to PUT an embeddings model - it needs this to perform indexing
 resource contributor 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
   name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
@@ -221,7 +249,7 @@ resource aiStudioIdentityContributor 'Microsoft.Authorization/roleAssignments@20
   }
 }
 
-resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-preview' = {
+resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-10-01-preview' = { //2024-07-01-preview
   name: aiStudioHubName
   location: resourceGroup().location
   identity: {
@@ -236,6 +264,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-pr
     description: 'AI Studio project for the AI Ops Accelerator'
     friendlyName: aiStudioHubName
     keyVault: kv.id
+    systemDatastoresAuthMode: 'identity' //RBAC for accessing datastores
     storageAccount: storage.id
     containerRegistry: acr.id
     applicationInsights: appInsights.id

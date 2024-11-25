@@ -108,6 +108,7 @@ resource appInsightsLogger 'Microsoft.ApiManagement/service/loggers@2023-05-01-p
     }
     resourceId: appInsights.id
     metrics: true
+    
   }
   dependsOn: [
     appInsightsLoggerNamedValue
