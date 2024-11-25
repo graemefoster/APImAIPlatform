@@ -19,6 +19,7 @@ resource aoaiApiVersionSet 'Microsoft.ApiManagement/service/apiVersionSets@2023-
   }
 }
 
+@batchSize(1)
 module aoaiApi './aoaiapi.bicep' = [
   for apiInfo in azureOpenAiApis: {
     name: '${deployment().name}-api-${apiInfo.version}'
