@@ -17,6 +17,7 @@ param aiSearchName string
 param azureAiStudioUsersGroupObjectId string
 param appInsightsName string
 param azureMachineLearningServicePrincipalId string
+param aiServicesName string
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' existing = {
   name: appInsightsName
@@ -25,6 +26,10 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' existing
 resource aiSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' existing = {
   name: aiSearchName
   scope: resourceGroup(aiSearchRg)
+}
+
+resource aiServices 'Microsoft.CognitiveServices/accounts@2024-10-01' existing = {
+  name: aiServicesName
 }
 
 resource aiCentral 'Microsoft.Web/sites@2023-12-01' existing = {
@@ -89,6 +94,20 @@ resource uamiRoleAssignmentAcrPull 'Microsoft.Authorization/roleAssignments@2022
     roleDefinitionId: acrPullRole.id
     principalId: aiStudioManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
+  }
+}
+
+resource cognitiveServicesOpenAIContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: 'a001fd3d-188f-4b5d-821b-7da978bf7442'
+}
+
+resource aoaiUsersCogServicesOAIContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${azureAiStudioUsersGroupObjectId}-cogsvcaoaicontrib-${aiServices.name}')
+  scope: aiServices
+  properties: {
+    roleDefinitionId: cognitiveServicesOpenAIContributor.id
+    principalId: azureAiStudioUsersGroupObjectId
+    principalType: 'Group'
   }
 }
 
@@ -249,7 +268,8 @@ resource aiStudioIdentityContributor 'Microsoft.Authorization/roleAssignments@20
   }
 }
 
-resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-10-01-preview' = { //2024-07-01-preview
+resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-preview' = {
+  //2024-07-01-preview
   name: aiStudioHubName
   location: resourceGroup().location
   identity: {
@@ -285,7 +305,26 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-10-01-pr
     }
   }
 
-  resource aiServicesConnection 'connections@2024-07-01-preview' = {
+  resource aoaiServicesConnection 'connections@2024-10-01' = {
+    name: aiServices.name
+    properties: {
+      category: 'AIServices'
+      target: 'https://${aiCentral.properties.defaultHostName}' //  azOpenAI.properties.endpoint //needs deployment names exposed via AI Central to match ones in AOAI
+      authType: 'ApiKey'
+      isSharedToAll: true
+      credentials: {
+        key: aiServices.listKeys().key1
+      }
+      peRequirement: 'Required'
+      useWorkspaceManagedIdentity: true
+      metadata: {
+        ApiType: 'Azure'
+        ResourceId: aiServices.id
+      }
+    }
+  }
+
+  resource aoaiConnection 'connections@2024-10-01' = {
     name: 'aiServicesConnection'
     properties: {
       category: 'AzureOpenAI'
@@ -297,9 +336,6 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-10-01-pr
       metadata: {
         ApiType: 'Azure'
         ResourceId: azOpenAI.id
-        ApiVersion: '2024-05-01-preview'
-        DeploymentApiVersion: '2023-11-01'
-        Location: location
       }
     }
   }
@@ -322,7 +358,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-10-01-pr
       }
     }
     dependsOn: [
-      aiServicesConnection
+      aoaiServicesConnection
     ]
   }
 }

@@ -138,6 +138,16 @@ module aoais 'Platform/AOAI/aoais.bicep' = {
   }
 }
 
+module aiServicesForInferenceEndpoint 'Platform/AIServices/main.bicep' = {
+  name: '${deployment().name}-aisvc'
+  scope: rg
+  params: {
+    aiServicesName: '${resourcePrefix}-aiservices'
+    location: location
+    logAnalyticsId: monitoring.outputs.logAnalyticsId
+  }
+}
+
 module azureOpenAiDeployments 'Platform/AOAI/aoaideployments.bicep' = {
   name: '${deployment().name}-aoaiDeployments'
   scope: rg
@@ -318,6 +328,7 @@ module aiStudio 'Platform/AIStudioProject/main.bicep' = if (deployAIStudio) {
     azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
     appInsightsName: monitoring.outputs.appInsightsName
     azureMachineLearningServicePrincipalId: azureMachineLearningServicePrincipalId
+    aiServicesName: aiServicesForInferenceEndpoint.outputs.aiServicesName
   }
 }
 
