@@ -130,7 +130,6 @@ module aoais 'Platform/AOAI/aoais.bicep' = {
   scope: rg
   params: {
     aoaiNames: platformJsonToBicepTypes.outputs.aoaiResources
-    location: location
     privateDnsZoneId: network.outputs.openAiPrivateDnsZoneId
     privateEndpointSubnetId: network.outputs.peSubnetId
     resourcePrefix: resourcePrefix
@@ -155,7 +154,6 @@ module azureOpenAiDeployments 'Platform/AOAI/aoaideployments.bicep' = {
     deploymentRequirements: platformJsonToBicepTypes.outputs.aoaiDeployments
     aoaiOutputs: aoais.outputs.aoaiResources
   }
-  dependsOn: [aoais]
 }
 
 module apimFoundation 'Platform/APIm/apim.bicep' = {
@@ -306,7 +304,6 @@ module aiCentralConfig 'Platform/AICentral/config.bicep' = {
     embeddingsDeploymentName: vectorizerEmbeddingsDeploymentName
     aiCentralUamiClientId: aiCentral.outputs.aiCentralUamiClientId
   }
-  dependsOn: [aiCentral]
 }
 
 // //try deploy an AI Studio hub / project

@@ -169,7 +169,7 @@ resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefin
 
 resource aoaiUsersStorageDataContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${azureAiStudioUsersGroupObjectId}-storage-data-contributor-${storage.name}')
-  scope: azOpenAI
+  scope: storage
   properties: {
     roleDefinitionId: storageBlobDataContributor.id
     principalId: azureAiStudioUsersGroupObjectId
@@ -178,7 +178,7 @@ resource aoaiUsersStorageDataContributor 'Microsoft.Authorization/roleAssignment
 }
 resource aoaiUsersStorageDataFileContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${azureAiStudioUsersGroupObjectId}-storage-file-privileged-contributor-${storage.name}')
-  scope: azOpenAI
+  scope: storage
   properties: {
     roleDefinitionId: storageFileDataPrivilegedContributor.id
     principalId: azureAiStudioUsersGroupObjectId
@@ -305,7 +305,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-pr
     }
   }
 
-  resource aoaiServicesConnection 'connections@2024-10-01' = {
+  resource aoaiServicesConnection 'connections@2024-10-01-preview' = {
     name: aiServices.name
     properties: {
       category: 'AIServices'
@@ -324,7 +324,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-pr
     }
   }
 
-  resource aoaiConnection 'connections@2024-10-01' = {
+  resource aoaiConnection 'connections@2024-10-01-preview' = {
     name: 'aiServicesConnection'
     properties: {
       category: 'AzureOpenAI'

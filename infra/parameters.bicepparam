@@ -1,8 +1,8 @@
 using './main.bicep'
 
 param location = 'australiaeast'
-param platformResourceGroup = 'aiplat19'
-param platformSlug = 'aiplat19'
+param platformResourceGroup = 'aiplat20'
+param platformSlug = 'aiplat20'
 param apimPublisherEmail = 'graemefoster@microsoft.com'
 param apimPublisherName = 'Graeme Foster'
 param environmentName = 'dev'
@@ -21,6 +21,5 @@ param developerPassword = ''
 //sample features
 param deploySubscriptionKeyAugmentingApi = true
 
-//seems to be an issue when deploying this - complains about missing RBAC, but it's there
 param deployAIStudio = true
 
