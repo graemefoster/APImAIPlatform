@@ -239,21 +239,6 @@ resource uamiRoleAssignmentAcrPull 'Microsoft.Authorization/roleAssignments@2022
   }
 }
 
-resource aiFoundryNetworkApprover 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: 'b556d68e-0be0-4f35-a333-ad7ee1ce17ea'
-}
-
-resource uamiRoleAssignmentNetworkApprover 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiFoundryManagedIdentity.name}-networkapprover-${resourceGroup().name}')
-  scope: resourceGroup()
-  properties: {
-    roleDefinitionId: aiFoundryNetworkApprover.id
-    principalId: aiFoundryManagedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-
 resource uamiRoleAssignmentAcrPush 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${aiFoundryManagedIdentity.name}-acrpush-${acr.name}')
   scope: acr
@@ -274,6 +259,7 @@ module platformRbac './AIFoundryPlatformRBAC/main.bicep' = {
     aiFoundryPrincipalId: aiFoundryManagedIdentity.properties.principalId
     azopenaiName: azopenaiName
     azureaiFoundryUsersGroupObjectId: azureaiFoundryUsersGroupObjectId
+    azureMachineLearningServicePrincipalId: azureMachineLearningServicePrincipalId
   }
 }
 
@@ -425,6 +411,7 @@ resource aiFoundryHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-p
     applicationInsights: appInsights.id
     primaryUserAssignedIdentity: aiFoundryManagedIdentity.id
     publicNetworkAccess: 'Enabled'
+
     managedNetwork: {
       isolationMode: 'AllowInternetOutbound'
       outboundRules: {
@@ -438,6 +425,7 @@ resource aiFoundryHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-p
         }
       }
     }
+
   }
 
   resource aoaiConnection 'connections@2024-10-01-preview' = {
@@ -454,6 +442,9 @@ resource aiFoundryHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-p
         ResourceId: azOpenAI.id
       }
     }
+    dependsOn: [
+      platformRbac
+    ]
   }
 
   resource aiSearchConnection 'connections@2024-07-01-preview' = {
@@ -475,13 +466,10 @@ resource aiFoundryHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-p
     }
     dependsOn: [
       aoaiConnection
+      platformRbac
     ]
   }
-  dependsOn: [
-    platformRbac
-  ]
 }
-
 
 //now spin up an AI Foundry project
 resource aoaiFoundryProject 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {

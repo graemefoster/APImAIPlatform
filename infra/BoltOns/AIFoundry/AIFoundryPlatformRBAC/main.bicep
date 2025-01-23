@@ -1,16 +1,29 @@
 targetScope = 'resourceGroup'
 param aiFoundryManagedIdentityName string
 param azopenaiName string
-param aiCentralName string
 param aiFoundryPrincipalId string
 param azureaiFoundryUsersGroupObjectId string
-
-resource aiCentral 'Microsoft.Web/sites@2023-12-01' existing = {
-  name: aiCentralName
-}
+param azureMachineLearningServicePrincipalId string
+param aiCentralName string
 
 resource azOpenAI 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' existing = {
   name: azopenaiName
+}
+
+resource aiCentral 'Microsoft.Web/sites@2024-04-01' existing = {
+  name: aiCentralName
+}
+
+//give Azure AI Studio appid (0736f41a-0425-4b46-bdb5-1563eff02385) access to backing services
+//High level of access... Not sure exactly what it needs here, but reader doesn't work.
+resource aiFoundryManagedIdentityContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiFoundryManagedIdentityName}-contributor-${resourceGroup().name}')
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: contributor.id
+    principalId: azureMachineLearningServicePrincipalId
+    principalType: 'ServicePrincipal'
+  }
 }
 
 resource aiFoundryNetworkApprover 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
@@ -56,5 +69,3 @@ resource aoaiContributorRoleForaiFoundryGroup 'Microsoft.Authorization/roleAssig
     principalType: 'Group'
   }
 }
-
-

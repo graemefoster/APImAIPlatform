@@ -168,8 +168,8 @@
             ]
         },
         {
-            "consumerName": "aistudio",
-            "requestName": "aistudio-requirements",
+            "consumerName": "aiFoundry",
+            "requestName": "aiFoundry-requirements",
             "contactEmail": "engineer.name@myorg.com",
             "costCentre": "123433",
             "constantAppIdIdentifiers": {
@@ -258,7 +258,7 @@
             ]
         },
         {
-            "consumerName": "aistudio",
+            "consumerName": "aiFoundry",
             "requirements": [
                 {
                     "outsideDeploymentName": "text-embedding-ada-002",
