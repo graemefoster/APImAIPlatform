@@ -14,12 +14,14 @@ param vectorizerEmbeddingsDeploymentName = 'embeddings'
 
 param azureMachineLearningServicePrincipalId = '02bef2cc-1387-4918-b91d-bbfc606fb7ed'
 
-param deployDeveloperVm = false
+param deployJumpBox = false
 param developerUsername = 'developer'
 param developerPassword = ''
 
 //sample features
 param deploySubscriptionKeyAugmentingApi = true
 
-param deployAIStudio = true
+param deployAIFoundry = true
+
+param deployPromptFlowSampleApp = true
 

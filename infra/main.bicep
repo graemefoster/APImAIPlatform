@@ -19,10 +19,12 @@ param azureAiStudioUsersGroupObjectId string
 //Adds an API to APIm which appends product keys to incoming requests, then re-routes them to the AOAI API
 param deploySubscriptionKeyAugmentingApi bool = false
 
-param deployAIStudio bool
+param deployAIFoundry bool
+
+param deployPromptFlowSampleApp bool
 
 //if we want a developer vm:
-param deployDeveloperVm bool
+param deployJumpBox bool
 param developerUsername string
 @secure()
 param developerPassword string
@@ -195,7 +197,7 @@ module azureOpenAIApis 'Platform/APIm/aoaiapis.bicep' = {
   dependsOn: [azureOpenAIApimBackends]
 }
 
-module consumerHostingPlatform 'Platform/ConsumerOrchestratorHost/main.bicep' = {
+module consumerHostingPlatform 'Platform/AICentralHost/main.bicep' = {
   name: '${deployment().name}-consumerHosting'
   scope: rg
   params: {
@@ -265,7 +267,7 @@ module aiCentral 'Platform/AICentral/main.bicep' = {
 }
 
 //Simplification - this isn't technically part of the platform but we are going to deploy a web-app to assist our PromptFlow consumer
-module consumerPromptFlow 'SampleConsumer/main.bicep' = {
+module consumerPromptFlow 'BoltOns//PromptFlowApp/main.bicep' = if (deployPromptFlowSampleApp) {
   name: '${deployment().name}-consumerPromptFlow'
   scope: consumerrg
   params: {
@@ -307,7 +309,7 @@ module aiCentralConfig 'Platform/AICentral/config.bicep' = {
 }
 
 // //try deploy an AI Studio hub / project
-module aiStudio 'Platform/AIStudioProject/main.bicep' = if (deployAIStudio) {
+module aiStudio 'BoltOns/AIFoundry/main.bicep' = if (deployAIFoundry) {
   name: '${deployment().name}-aiStudio'
   scope: rg
   params: {
@@ -329,7 +331,7 @@ module aiStudio 'Platform/AIStudioProject/main.bicep' = if (deployAIStudio) {
   }
 }
 
-module developerVm './Platform/DeveloperVM/main.bicep' = if (deployDeveloperVm) {
+module developerVm 'BoltOns/JumpBox/main.bicep' = if (deployJumpBox) {
   name: '${deployment().name}-developerVm'
   scope: rg
   params: {
