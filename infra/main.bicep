@@ -14,7 +14,7 @@ param azureMachineLearningServicePrincipalId string
 
 //we grant some additional permissions to this group to enable AI Studio to work
 @description('The service principal id representing app 0736f41a-0425-4b46-bdb5-1563eff02385 (Azure Machine Learning) in your Entra tenant')
-param azureAiStudioUsersGroupObjectId string
+param azureaiFoundryUsersGroupObjectId string
 
 //Adds an API to APIm which appends product keys to incoming requests, then re-routes them to the AOAI API
 param deploySubscriptionKeyAugmentingApi bool = false
@@ -34,8 +34,13 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   location: location
 }
 
-resource consumerrg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
+resource promptflowrg 'Microsoft.Resources/resourceGroups@2024-03-01' = if (deployPromptFlowSampleApp) {
   name: '${platformResourceGroup}-${environmentName}-consumer'
+  location: location
+}
+
+resource aifoundryrg 'Microsoft.Resources/resourceGroups@2024-03-01' = if (deployAIFoundry) {
+  name: '${platformResourceGroup}-${environmentName}-aifoundry'
   location: location
 }
 
@@ -48,7 +53,7 @@ var appInsightsName = '${resourcePrefix}-appi'
 var webappname = '${resourcePrefix}-pf-app'
 var aiCentralAppName = '${resourcePrefix}-aic-app'
 var acrName = replace('${resourcePrefix}-acr', '-', '')
-var aiStudioAcrName = replace('${resourcePrefix}-aistudioacr', '-', '')
+var aiFoundryAcrName = replace('${resourcePrefix}-aiFoundryacr', '-', '')
 var storageName = replace('${resourcePrefix}-stg', '-', '')
 var cosmosName = replace('${resourcePrefix}-cosmos', '-', '')
 var textAnalyticsName = replace('${resourcePrefix}-textan', '-', '')
@@ -139,16 +144,6 @@ module aoais 'Platform/AOAI/aoais.bicep' = {
   }
 }
 
-module aiServicesForInferenceEndpoint 'Platform/AIServices/main.bicep' = {
-  name: '${deployment().name}-aisvc'
-  scope: rg
-  params: {
-    aiServicesName: '${resourcePrefix}-aiservices'
-    location: location
-    logAnalyticsId: monitoring.outputs.logAnalyticsId
-  }
-}
-
 module azureOpenAiDeployments 'Platform/AOAI/aoaideployments.bicep' = {
   name: '${deployment().name}-aoaiDeployments'
   scope: rg
@@ -219,8 +214,8 @@ var consumerNameToClientIdMappings = [
     entraClientIds: [consumerPromptFlow.outputs.promptFlowAppIdentityId]
   }
   {
-    consumerName: 'aistudio'
-    entraClientIds: filter(platformJsonToBicepTypes.outputs.consumerDemands, item => item.consumerName == 'aistudio')[0].constantAppIdIdentifiers[environmentName]
+    consumerName: 'aiFoundry'
+    entraClientIds: filter(platformJsonToBicepTypes.outputs.consumerDemands, item => item.consumerName == 'aiFoundry')[0].constantAppIdIdentifiers[environmentName]
   }
 ]
 
@@ -269,7 +264,7 @@ module aiCentral 'Platform/AICentral/main.bicep' = {
 //Simplification - this isn't technically part of the platform but we are going to deploy a web-app to assist our PromptFlow consumer
 module consumerPromptFlow 'BoltOns//PromptFlowApp/main.bicep' = if (deployPromptFlowSampleApp) {
   name: '${deployment().name}-consumerPromptFlow'
-  scope: consumerrg
+  scope: promptflowrg
   params: {
     acrName: consumerHostingPlatform.outputs.acrName
     appInsightsName: monitoring.outputs.appInsightsName
@@ -282,11 +277,12 @@ module consumerPromptFlow 'BoltOns//PromptFlowApp/main.bicep' = if (deployPrompt
     aiCentralHostName: 'https://${aiCentralAppName}.azurewebsites.net'
     kvDnsZoneId: network.outputs.kvPrivateDnsZoneId
     peSubnet: network.outputs.peSubnetId
-    azureSearchPrivateDnsZoneId: network.outputs.azureSearchPrivateDnsZoneId
-    aiCentralResourceId: aiCentral.outputs.aiCentralResourceId
     platformRg: rg.name
   }
 }
+
+//write a bicep template to deploy a storage account
+
 
 module aiCentralConfig 'Platform/AICentral/config.bicep' = {
   name: '${deployment().name}-aiCentralConfig'
@@ -309,25 +305,24 @@ module aiCentralConfig 'Platform/AICentral/config.bicep' = {
 }
 
 // //try deploy an AI Studio hub / project
-module aiStudio 'BoltOns/AIFoundry/main.bicep' = if (deployAIFoundry) {
-  name: '${deployment().name}-aiStudio'
-  scope: rg
+module aiFoundry 'BoltOns/AIFoundry/main.bicep' = if (deployAIFoundry) {
+  name: '${deployment().name}-aiFoundry'
+  scope: aifoundryrg
   params: {
     location: location
-    aiStudioHubName: '${resourcePrefix}-aishub'
-    keyVaultName: platformKeyVault.outputs.kvName
-    storageName: storage.outputs.storageName
-    acrName: aiStudioAcrName
+    aiFoundryHubName: '${resourcePrefix}-aishub'
+    acrName: aiFoundryAcrName
     azopenaiName: aoais.outputs.aoaiResources[0].resourceName
-    aiStudioProjectName: '${resourcePrefix}-aisprj'
+    aiFoundryProjectName: '${resourcePrefix}-aisprj'
     logAnalyticsId: monitoring.outputs.logAnalyticsId
     aiCentralName: aiCentral.outputs.name
-    aiSearchName: consumerPromptFlow.outputs.aiSearchName
-    aiSearchRg: consumerrg.name
-    azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
+    azureaiFoundryUsersGroupObjectId: azureaiFoundryUsersGroupObjectId
     appInsightsName: monitoring.outputs.appInsightsName
     azureMachineLearningServicePrincipalId: azureMachineLearningServicePrincipalId
-    aiServicesName: aiServicesForInferenceEndpoint.outputs.aiServicesName
+    aiCentralResourceId: aiCentral.outputs.aiCentralResourceId
+    azureSearchPrivateDnsZoneId: network.outputs.azureSearchPrivateDnsZoneId
+    peSubnet: network.outputs.peSubnetId
+    platformResourceGroupName: rg.name
   }
 }
 

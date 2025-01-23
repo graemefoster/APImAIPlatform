@@ -4,42 +4,183 @@ targetScope = 'resourceGroup'
 //I'm trying to build out prompt-flows / indexing / understand the security of everything
 
 param location string
-param aiStudioHubName string
-param keyVaultName string
-param storageName string
+param aiFoundryHubName string
 param acrName string
 param azopenaiName string
-param aiStudioProjectName string
+param aiFoundryProjectName string
 param logAnalyticsId string
 param aiCentralName string
-param aiSearchRg string
-param aiSearchName string
-param azureAiStudioUsersGroupObjectId string
+param azureaiFoundryUsersGroupObjectId string
 param appInsightsName string
 param azureMachineLearningServicePrincipalId string
-param aiServicesName string
+param azureSearchPrivateDnsZoneId string
+param peSubnet string
+param platformResourceGroupName string
+param aiCentralResourceId string
+
+var aiFoundryManagedIdentityName = '${aiFoundryHubName}-uami'
+
+resource aiFoundryManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
+  name: aiFoundryManagedIdentityName
+  location: location
+}
+
+//deploy a few more components so we can demonstrate connecting AI Foundry to AI Search
+resource azureSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' = {
+  name: '${aiFoundryHubName}-search'
+  location: location
+  sku: {
+    name: 'basic'
+  }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${aiFoundryManagedIdentity.id}': {}
+    }
+  }
+  properties: {
+    authOptions: {
+      aadOrApiKey: {
+        aadAuthFailureMode: 'http401WithBearerChallenge'
+      }
+    }
+    networkRuleSet: {
+      bypass: 'AzureServices' //Allow Azure Open AI Ingestion endpoint to callback to AI Search to index embedded items.
+      ipRules: []
+    }
+    disabledDataExfiltrationOptions: [
+      'All'
+    ]
+    publicNetworkAccess: 'disabled'
+    hostingMode: 'default'
+    semanticSearch: 'standard'
+  }
+
+  resource storageEndpoint 'sharedPrivateLinkResources' = {
+    name: 'storage'
+    properties: {
+      groupId: 'blob'
+      requestMessage: 'Azure Search would like to access your storage account'
+      privateLinkResourceId: consumerStorage.id
+      status: 'Approved'
+    }
+  }
+
+  resource aiCentralEndpoint 'sharedPrivateLinkResources' = {
+    name: 'aicentral'
+    properties: {
+      groupId: 'sites'
+      requestMessage: 'Azure Search would like to access your AOAI resources via AI Central'
+      privateLinkResourceId: aiCentralResourceId
+      status: 'Approved'
+    }
+    dependsOn: [storageEndpoint] //doesn't like multiple updates at once
+  }
+}
+
+//storage for AI Foundry
+resource consumerStorage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+  name: '${substring(replace('${aiFoundryHubName}', '-', ''), 0, 15)}stg'
+  kind: 'StorageV2'
+  location: location
+  sku: { name: 'Standard_LRS' }
+  properties: {
+    accessTier: 'Hot'
+    allowBlobPublicAccess: false
+    defaultToOAuthAuthentication: true
+  }
+}
+
+resource searchDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  scope: azureSearch
+  name: 'diagnostics'
+  properties: {
+    workspaceId: logAnalyticsId
+    logs: [
+      {
+        categoryGroup: 'AllLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
+
+//There is a lot of RBAC here... most of this has been built by trial and error.
+//Some flows are front-channel, some are back-channel, some are side-channel (AOAI calls some of these endpoints)
+
+//read access on the blobs for indexing (over a private endpoint)
+//AI Foundry was observed to make calls to storage from its backend
+resource storageReader 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
+}
+
+resource azSearchRbacOnStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${azureSearch.name}-storagereader-${consumerStorage.name}')
+  scope: consumerStorage
+  properties: {
+    roleDefinitionId: storageReader.id
+    principalId: aiFoundryManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+//private endpoint for AI Search
+resource privateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' = {
+  name: '${azureSearch.name}-pe'
+  location: location
+  properties: {
+    subnet: {
+      id: peSubnet
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${azureSearch.name}-private-link-service-connection'
+        properties: {
+          privateLinkServiceId: azureSearch.id
+          groupIds: [
+            'searchService'
+          ]
+        }
+      }
+    ]
+  }
+
+  resource dnsGroup 'privateDnsZoneGroups@2022-11-01' = {
+    name: '${azureSearch.name}-private-endpoint-dns'
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: '${azureSearch.name}-private-endpoint-cfg'
+          properties: {
+            privateDnsZoneId: azureSearchPrivateDnsZoneId
+          }
+        }
+      ]
+    }
+  }
+}
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' existing = {
   name: appInsightsName
 }
 
-resource aiSearch 'Microsoft.Search/searchServices@2024-03-01-Preview' existing = {
-  name: aiSearchName
-  scope: resourceGroup(aiSearchRg)
-}
-
-resource aiServices 'Microsoft.CognitiveServices/accounts@2024-10-01' existing = {
-  name: aiServicesName
-}
-
 resource aiCentral 'Microsoft.Web/sites@2023-12-01' existing = {
+  scope: resourceGroup(platformResourceGroupName)
   name: aiCentralName
 }
 
 resource azOpenAI 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' existing = {
+  scope: resourceGroup(platformResourceGroupName)
   name: azopenaiName
 }
 
+//AI Foundry can be provided an Azure Container Registry. 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   name: acrName
   location: location
@@ -51,30 +192,31 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   }
 }
 
-resource kv 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
-  name: keyVaultName
-}
-
-resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
-  name: storageName
-}
-
-var aiStudioManagedIdentityName = '${aiStudioHubName}-uami'
-resource aiStudioManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
-  name: aiStudioManagedIdentityName
+resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
+  name: replace('${aiFoundryHubName}-kv', '-', '')
   location: location
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+    enableRbacAuthorization: true
+    publicNetworkAccess: 'disabled'
+  }
 }
 
 resource storageBlobDataWriter 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
 }
 
+//AI Foundry was observed to make calls to write to storage from its backend
 resource uamiRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-storagereader-${storage.name}')
-  scope: storage
+  name: guid('${aiFoundryManagedIdentity.name}-storagereader-${consumerStorage.name}')
+  scope: consumerStorage
   properties: {
     roleDefinitionId: storageBlobDataWriter.id
-    principalId: aiStudioManagedIdentity.properties.principalId
+    principalId: aiFoundryManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -88,73 +230,92 @@ resource acrPushRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview
 }
 
 resource uamiRoleAssignmentAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-acrpull-${acr.name}')
+  name: guid('${aiFoundryManagedIdentity.name}-acrpull-${acr.name}')
   scope: acr
   properties: {
     roleDefinitionId: acrPullRole.id
-    principalId: aiStudioManagedIdentity.properties.principalId
+    principalId: aiFoundryManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-resource cognitiveServicesOpenAIContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: 'a001fd3d-188f-4b5d-821b-7da978bf7442'
-}
-
-resource aoaiUsersCogServicesOAIContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${azureAiStudioUsersGroupObjectId}-cogsvcaoaicontrib-${aiServices.name}')
-  scope: aiServices
-  properties: {
-    roleDefinitionId: cognitiveServicesOpenAIContributor.id
-    principalId: azureAiStudioUsersGroupObjectId
-    principalType: 'Group'
-  }
-}
-
-resource aiStudioNetworkApprover 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+resource aiFoundryNetworkApprover 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: 'b556d68e-0be0-4f35-a333-ad7ee1ce17ea'
 }
 
 resource uamiRoleAssignmentNetworkApprover 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-networkapprover-${resourceGroup().name}')
+  name: guid('${aiFoundryManagedIdentity.name}-networkapprover-${resourceGroup().name}')
   scope: resourceGroup()
   properties: {
-    roleDefinitionId: aiStudioNetworkApprover.id
-    principalId: aiStudioManagedIdentity.properties.principalId
+    roleDefinitionId: aiFoundryNetworkApprover.id
+    principalId: aiFoundryManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-resource uamiRoleAICentralAssignmentNetworkApprover 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-networkapprover-${aiCentral.name}')
-  scope: aiCentral
-  properties: {
-    roleDefinitionId: aiStudioNetworkApprover.id
-    principalId: aiStudioManagedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
 
 resource uamiRoleAssignmentAcrPush 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-acrpush-${acr.name}')
+  name: guid('${aiFoundryManagedIdentity.name}-acrpush-${acr.name}')
   scope: acr
   properties: {
     roleDefinitionId: acrPushRole.id
-    principalId: aiStudioManagedIdentity.properties.principalId
+    principalId: aiFoundryManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-//TODO - work out RG alignment. Not sure AI Studio should be in the platform RG. Maybe need for a third.
-module aiSearchRbac 'aistudio-consumer-rbac.bicep' = {
-  name: '${deployment().name}-aiSearchRbac'
-  scope: resourceGroup(aiSearchRg)
+//need network approver on platform components
+module platformRbac './AIFoundryPlatformRBAC/main.bicep' = {
+  name: '${deployment().name}-rbac'
+  scope: resourceGroup(platformResourceGroupName)
   params: {
-    aiSearchName: aiSearchName
-    aiStudioManagedIdentityName: aiStudioManagedIdentity.name
-    aiStudioManagedIdentityRg: resourceGroup().name
-    azureAiStudioUsersGroupObjectId: azureAiStudioUsersGroupObjectId
-    azureMachineLearningServicePrincipalId: azureMachineLearningServicePrincipalId
+    aiFoundryManagedIdentityName: aiFoundryManagedIdentityName
+    aiCentralName: aiCentralName
+    aiFoundryPrincipalId: aiFoundryManagedIdentity.properties.principalId
+    azopenaiName: azopenaiName
+    azureaiFoundryUsersGroupObjectId: azureaiFoundryUsersGroupObjectId
+  }
+}
+
+resource searchServiceContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: '7ca78c08-252a-4471-8644-bb5ff32d4ba0'
+}
+
+resource aiSearchServiceContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${azureaiFoundryUsersGroupObjectId}-contributor-${azureSearch.name}')
+  properties: {
+    roleDefinitionId: searchServiceContributor.id
+    principalId: azureaiFoundryUsersGroupObjectId
+    principalType: 'Group'
+  }
+}
+
+resource searchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: '8ebe5a00-799e-43f5-93ac-243d3dce84a7'
+}
+
+resource aiSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${azureaiFoundryUsersGroupObjectId}-indexContributor-${azureSearch.name}')
+  scope: azureSearch
+  properties: {
+    roleDefinitionId: searchIndexContributor.id
+    principalId: azureaiFoundryUsersGroupObjectId
+    principalType: 'Group'
+  }
+}
+
+// For AI Studio PromptFlows - these should use the UAMI and need to query indexes
+resource searchIndexReader 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: '1407120a-92aa-4202-b7e9-c0e197c71c8f'
+}
+
+resource aiSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiFoundryManagedIdentity.name}-indexreader-${azureSearch.name}')
+  scope: azureSearch
+  properties: {
+    roleDefinitionId: searchIndexReader.id
+    principalId: aiFoundryManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -168,50 +329,20 @@ resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefin
 }
 
 resource aoaiUsersStorageDataContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${azureAiStudioUsersGroupObjectId}-storage-data-contributor-${storage.name}')
-  scope: storage
+  name: guid('${azureaiFoundryUsersGroupObjectId}-storage-data-contributor-${consumerStorage.name}')
+  scope: consumerStorage
   properties: {
     roleDefinitionId: storageBlobDataContributor.id
-    principalId: azureAiStudioUsersGroupObjectId
+    principalId: azureaiFoundryUsersGroupObjectId
     principalType: 'Group'
   }
 }
 resource aoaiUsersStorageDataFileContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${azureAiStudioUsersGroupObjectId}-storage-file-privileged-contributor-${storage.name}')
-  scope: storage
+  name: guid('${azureaiFoundryUsersGroupObjectId}-storage-file-privileged-contributor-${consumerStorage.name}')
+  scope: consumerStorage
   properties: {
     roleDefinitionId: storageFileDataPrivilegedContributor.id
-    principalId: azureAiStudioUsersGroupObjectId
-    principalType: 'Group'
-  }
-}
-
-//Allow AI Studio to PUT an embeddings model - it needs this to perform indexing
-resource contributor 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
-  name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-}
-
-resource aoaiContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-contributor-${azOpenAI.name}')
-  scope: azOpenAI
-  properties: {
-    roleDefinitionId: contributor.id
-    principalId: aiStudioManagedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-//AI Studio uses the /ingestion endpoint which isn't covered in Cog Svc users. This is performed as the AI Studio user
-resource aoaiContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
-  name: 'a001fd3d-188f-4b5d-821b-7da978bf7442'
-}
-
-resource aoaiContributorRoleForAIStudioGroup 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${azureAiStudioUsersGroupObjectId}-aoaiContributor-${azOpenAI.name}')
-  scope: azOpenAI
-  properties: {
-    roleDefinitionId: aoaiContributorRole.id
-    principalId: azureAiStudioUsersGroupObjectId
+    principalId: azureaiFoundryUsersGroupObjectId
     principalType: 'Group'
   }
 }
@@ -223,21 +354,25 @@ resource kvAdministratorRole 'Microsoft.Authorization/roleAssignments@2022-04-01
 }
 
 resource kvContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-kvadministrator-${kv.name}')
+  name: guid('${aiFoundryManagedIdentity.name}-kvadministrator-${kv.name}')
   scope: kv
   properties: {
     roleDefinitionId: kvAdministratorRole.id
-    principalId: aiStudioManagedIdentity.properties.principalId
+    principalId: aiFoundryManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
+resource contributor 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+}
+
 resource acrContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentity.name}-contributor-${acr.name}')
+  name: guid('${aiFoundryManagedIdentity.name}-contributor-${acr.name}')
   scope: acr
   properties: {
     roleDefinitionId: contributor.id
-    principalId: aiStudioManagedIdentity.properties.principalId
+    principalId: aiFoundryManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -248,7 +383,7 @@ resource readerRole 'Microsoft.Authorization/roleAssignments@2022-04-01' existin
   name: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
 }
 
-resource aiStudioReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource aiFoundryReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${azureMachineLearningServicePrincipalId}-reader-${resourceGroup().name}')
   scope: resourceGroup()
   properties: {
@@ -258,37 +393,37 @@ resource aiStudioReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-resource aiStudioIdentityContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${aiStudioManagedIdentityName}-contributor-${resourceGroup().name}')
+resource aiFoundryIdentityContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${aiFoundryManagedIdentityName}-contributor-${resourceGroup().name}')
   scope: resourceGroup()
   properties: {
     roleDefinitionId: contributor.id
-    principalId: aiStudioManagedIdentity.properties.principalId
+    principalId: aiFoundryManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-preview' = {
+resource aiFoundryHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-preview' = {
   //2024-07-01-preview
-  name: aiStudioHubName
+  name: aiFoundryHubName
   location: resourceGroup().location
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${aiStudioManagedIdentity.id}': {}
+      '${aiFoundryManagedIdentity.id}': {}
     }
   }
   kind: 'hub'
   properties: {
     allowPublicAccessWhenBehindVnet: true
     description: 'AI Studio project for the AI Ops Accelerator'
-    friendlyName: aiStudioHubName
+    friendlyName: aiFoundryHubName
     keyVault: kv.id
     systemDatastoresAuthMode: 'identity' //RBAC for accessing datastores
-    storageAccount: storage.id
+    storageAccount: consumerStorage.id
     containerRegistry: acr.id
     applicationInsights: appInsights.id
-    primaryUserAssignedIdentity: aiStudioManagedIdentity.id
+    primaryUserAssignedIdentity: aiFoundryManagedIdentity.id
     publicNetworkAccess: 'Enabled'
     managedNetwork: {
       isolationMode: 'AllowInternetOutbound'
@@ -301,25 +436,6 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-pr
           }
           category: 'UserDefined'
         }
-      }
-    }
-  }
-
-  resource aoaiServicesConnection 'connections@2024-10-01-preview' = {
-    name: aiServices.name
-    properties: {
-      category: 'AIServices'
-      target: 'https://${aiCentral.properties.defaultHostName}' //  azOpenAI.properties.endpoint //needs deployment names exposed via AI Central to match ones in AOAI
-      authType: 'ApiKey'
-      isSharedToAll: true
-      credentials: {
-        key: aiServices.listKeys().key1
-      }
-      peRequirement: 'Required'
-      useWorkspaceManagedIdentity: true
-      metadata: {
-        ApiType: 'Azure'
-        ResourceId: aiServices.id
       }
     }
   }
@@ -344,7 +460,7 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-pr
     name: 'aiSearchConnection'
     properties: {
       category: 'CognitiveSearch'
-      target: 'https://${aiSearch.name}.search.windows.net'
+      target: 'https://${azureSearch.name}.search.windows.net'
       authType: 'AAD'
       isSharedToAll: true
       useWorkspaceManagedIdentity: true
@@ -353,19 +469,23 @@ resource aiStudioHub 'Microsoft.MachineLearningServices/workspaces@2024-07-01-pr
         ApiType: 'Azure'
         ApiVersion: '2024-05-01-preview'
         DeploymentApiVersion: '2023-11-01'
-        ResourceId: aiSearch.id
+        ResourceId: azureSearch.id
         Location: location
       }
     }
     dependsOn: [
-      aoaiServicesConnection
+      aoaiConnection
     ]
   }
+  dependsOn: [
+    platformRbac
+  ]
 }
 
-// struggle to recreate this. 
-resource aoaiStudioProject 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
-  name: aiStudioProjectName
+
+//now spin up an AI Foundry project
+resource aoaiFoundryProject 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
+  name: aiFoundryProjectName
   location: resourceGroup().location
   kind: 'project'
   identity: {
@@ -373,13 +493,13 @@ resource aoaiStudioProject 'Microsoft.MachineLearningServices/workspaces@2024-04
   }
   properties: {
     description: 'AI Studio project for the AI Ops Accelerator'
-    friendlyName: aiStudioProjectName
-    hubResourceId: aiStudioHub.id
+    friendlyName: aiFoundryProjectName
+    hubResourceId: aiFoundryHub.id
   }
 }
 
 resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  scope: aiStudioHub
+  scope: aiFoundryHub
   name: 'diagnostics'
   properties: {
     workspaceId: logAnalyticsId
@@ -399,7 +519,7 @@ resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' 
 }
 
 resource diagnosticsProject 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  scope: aoaiStudioProject
+  scope: aoaiFoundryProject
   name: 'diagnostics'
   properties: {
     workspaceId: logAnalyticsId
