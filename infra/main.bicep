@@ -10,7 +10,6 @@ param location string
 param tenantId string
 param environmentName string = 'dev'
 param vectorizerEmbeddingsDeploymentName string
-param azureMachineLearningServicePrincipalId string
 
 //we grant some additional permissions to this group to enable AI Studio to work
 @description('The service principal id representing app 0736f41a-0425-4b46-bdb5-1563eff02385 (Azure Machine Learning) in your Entra tenant')
@@ -318,7 +317,6 @@ module aiFoundry 'BoltOns/AIFoundry/main.bicep' = if (deployAIFoundry) {
     aiCentralName: aiCentral.outputs.name
     azureaiFoundryUsersGroupObjectId: azureaiFoundryUsersGroupObjectId
     appInsightsName: monitoring.outputs.appInsightsName
-    azureMachineLearningServicePrincipalId: azureMachineLearningServicePrincipalId
     aiCentralResourceId: aiCentral.outputs.aiCentralResourceId
     azureSearchPrivateDnsZoneId: network.outputs.azureSearchPrivateDnsZoneId
     peSubnet: network.outputs.peSubnetId

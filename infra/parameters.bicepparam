@@ -1,8 +1,8 @@
 using './main.bicep'
 
 param location = 'australiaeast'
-param platformResourceGroup = 'aiplat22'
-param platformSlug = 'aiplat22'
+param platformResourceGroup = 'aiplat24'
+param platformSlug = 'aiplat24'
 param apimPublisherEmail = 'graemefoster@microsoft.com'
 param apimPublisherName = 'Graeme Foster'
 param environmentName = 'dev'
@@ -10,7 +10,6 @@ param ghRepo = 'aPImAIPlatform'
 param ghUsername = 'graemefoster'
 param tenantId = 'a77c67fe-34bf-43d1-9652-7150e6c155c3'
 param vectorizerEmbeddingsDeploymentName = 'embeddings'
-param azureMachineLearningServicePrincipalId = '02bef2cc-1387-4918-b91d-bbfc606fb7ed'
 
 //Deploy an API that can augment a subscription key to a JWT protected request. Useful if your tooling (PromptFlow)
 //doesn't support adding JWT and API-Key auth.
